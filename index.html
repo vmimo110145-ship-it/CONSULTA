@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expresso Lucena - Consulta por Parada (com persistência entre dispositivos)</title>
+    <title>Expresso Lucena - Consulta por Nome Completo</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,7 +30,7 @@
         .filtro-area input { background: #fefdf7; border-radius: 48px; padding: 12px 20px; width: 100%; border: 1px solid #cbdcd8; }
         .card { background: #ffffff; border-left: 6px solid #1e7e6e; border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: 0.1s; }
         .card p { margin: 8px 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
-        .card strong { width: 140px; color: #1a5a4f; font-weight: 700; }
+        .card strong { width: 150px; color: #1a5a4f; font-weight: 700; }
         .endereco-link { color: #1e7e6e; text-decoration: none; border-bottom: 1px dashed #1e7e6e; cursor: pointer; font-weight: 500; }
         .endereco-link:hover { color: #0f5f52; border-bottom: 1px solid; }
         .erro { background: #ffe9e9; color: #c0392b; padding: 14px; border-radius: 20px; text-align: center; border-left: 4px solid #c0392b; }
@@ -92,8 +92,8 @@
     </div>
 
     <div id="filtroArea" class="filtro-area">
-        <input type="text" id="filtro" placeholder="🔎 Digite o nome da parada (ex: Terminal Norte, Praça Central)...">
-        <div class="badge-busca" style="margin-top:8px;">✔ Busca exclusiva na coluna "NOME PARADA"</div>
+        <input type="text" id="filtro" placeholder="🔎 Digite o NOME COMPLETO da parada (ex: Terminal Norte, Praça Central)...">
+        <div class="badge-busca" style="margin-top:8px;">✔ Busca exclusiva na coluna "NOME COMPLETO"</div>
     </div>
 
     <div id="resultado"></div>
@@ -102,7 +102,6 @@
         <button class="btn-master" id="btnMaster">🔐 Acesso Master</button>
         <button class="btn-logo" id="btnAbrirLogo" style="display:none;">🖼️ Trocar Logo</button>
     </div>
-    <!-- Área extra para exportar/importar dados (visível apenas no modo master) -->
     <div id="persistArea" style="display: none; margin-top: 20px; border-top: 1px solid #d4e2de; padding-top: 20px;">
         <div class="acao-master-group">
             <button id="btnExportarDados" class="btn-export">💾 Exportar Dados (Planilha + Logo)</button>
@@ -114,11 +113,11 @@
 </div>
 
 <script>
-    // ====================  CONFIGURAÇÃO EXPRESSO LUCENA ====================
+    // ====================  CONFIGURAÇÃO EXPRESSO LUCENA - BUSCA POR NOME COMPLETO ====================
     const SENHA_MASTER = "Mimo@#2026";
     let dadosPlanilha = {}, listaAbas = [], ultimaUnidade = null, registrosUnidade = [];
 
-    // ---------- helpers flexíveis para capturar campos (case insensitive) ----------
+    // ---------- helpers flexíveis para capturar campos (case insensitive) - prioridade para "NOME COMPLETO" ----------
     function getFieldValue(row, possibleKeys) {
         if (!row || typeof row !== 'object') return "—";
         const rowKeys = Object.keys(row);
@@ -133,10 +132,11 @@
         return "—";
     }
 
+    // Mapeamento dos campos - o principal agora é "NOME COMPLETO"
     const fieldMapping = {
-        nomeParada: {
-            display: "📍 Nome da Parada",
-            possible: ["NOME PARADA", "Nome Parada", "Nome da Parada", "NOME_PARADA", "PARADA", "Ponto Parada"]
+        nomeCompleto: {
+            display: "📍 Nome Completo",
+            possible: ["NOME COMPLETO", "Nome Completo", "NOME PARADA", "Nome Parada", "Nome da Parada", "PARADA", "Ponto Parada"]  // fallback para compatibilidade
         },
         turno: {
             display: "🕒 Turno",
@@ -166,7 +166,7 @@
 
     function extrairDadosParada(row) {
         return {
-            nome: getFieldValue(row, fieldMapping.nomeParada.possible),
+            nome: getFieldValue(row, fieldMapping.nomeCompleto.possible),
             turno: getFieldValue(row, fieldMapping.turno.possible),
             linha: getFieldValue(row, fieldMapping.linha.possible),
             enderecoRaw: getFieldValue(row, fieldMapping.endereco.possible),
@@ -199,13 +199,13 @@
     function exibirResultados(registros, unidade, termoBusca = "") {
         const div = document.getElementById("resultado");
         if (!registros || registros.length === 0) {
-            div.innerHTML = `<div class="erro">📭 Nenhuma parada encontrada com "${escapeHtml(termoBusca)}" na unidade ${escapeHtml(unidade)}.<br>Verifique o nome da parada (coluna NOME PARADA).</div>`;
+            div.innerHTML = `<div class="erro">📭 Nenhuma parada encontrada com "${escapeHtml(termoBusca)}" na unidade ${escapeHtml(unidade)}.<br>Verifique o NOME COMPLETO na coluna correspondente da planilha.</div>`;
             return;
         }
         let html = `<div class="sucesso">✅ ${registros.length} parada(s) encontrada(s) para "${escapeHtml(termoBusca)}" em <strong>${escapeHtml(unidade)}</strong></div>`;
         for (let item of registros) {
             const dados = extrairDadosParada(item);
-            const nomeParada = dados.nome !== "—" ? dados.nome : "Sem nome";
+            const nomeCompleto = dados.nome !== "—" ? dados.nome : "Sem nome";
             const turno = dados.turno;
             const linha = dados.linha;
             const enderecoOriginal = dados.enderecoRaw;
@@ -221,7 +221,7 @@
                 : escapeHtml(enderecoExibicao);
             html += `
                 <div class="card">
-                    <p><strong>📍 Nome da Parada:</strong> ${escapeHtml(nomeParada)}</p>
+                    <p><strong>📍 Nome Completo:</strong> ${escapeHtml(nomeCompleto)}</p>
                     <p><strong>🕒 Turno:</strong> ${escapeHtml(turno)}</p>
                     <p><strong>🚍 Linha Vinculada:</strong> ${escapeHtml(linha)}</p>
                     <p><strong>📍 Endereço Parada:</strong> ${enderecoLink}</p>
@@ -234,21 +234,22 @@
         div.innerHTML = html;
     }
 
-    function aplicarFiltroParada() {
+    // Filtro baseado APENAS no campo "NOME COMPLETO"
+    function aplicarFiltroPorNomeCompleto() {
         const termo = document.getElementById("filtro").value.trim();
         if (!ultimaUnidade) {
             document.getElementById("resultado").innerHTML = `<div class="info">✨ Selecione uma unidade (aba) antes de buscar.</div>`;
             return;
         }
         if (!termo) {
-            document.getElementById("resultado").innerHTML = `<div class="info">🔎 Unidade "${escapeHtml(ultimaUnidade)}" ativa. Digite o nome da parada para consultar.</div>`;
+            document.getElementById("resultado").innerHTML = `<div class="info">🔎 Unidade "${escapeHtml(ultimaUnidade)}" ativa. Digite o NOME COMPLETO da parada para consultar.</div>`;
             return;
         }
         const lowerTermo = termo.toLowerCase();
         const filtrados = registrosUnidade.filter(row => {
-            let nomeParadaVal = getFieldValue(row, fieldMapping.nomeParada.possible);
-            if (nomeParadaVal === "—") return false;
-            return String(nomeParadaVal).toLowerCase().includes(lowerTermo);
+            let nomeVal = getFieldValue(row, fieldMapping.nomeCompleto.possible);
+            if (nomeVal === "—") return false;
+            return String(nomeVal).toLowerCase().includes(lowerTermo);
         });
         exibirResultados(filtrados, ultimaUnidade, termo);
     }
@@ -273,12 +274,12 @@
         registrosUnidade = dadosPlanilha[unidadeNome];
         document.getElementById("filtroArea").classList.add("visivel");
         document.getElementById("filtro").value = "";
-        document.getElementById("resultado").innerHTML = `<div class="info">✅ Unidade "${escapeHtml(unidadeNome)}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome da parada para filtrar.</div>`;
+        document.getElementById("resultado").innerHTML = `<div class="info">✅ Unidade "${escapeHtml(unidadeNome)}" carregada. Total de ${registrosUnidade.length} registros. Digite o NOME COMPLETO da parada para filtrar.</div>`;
         if (registrosUnidade.length > 0) {
             const sampleRow = registrosUnidade[0];
-            const nomeParadaSample = getFieldValue(sampleRow, fieldMapping.nomeParada.possible);
-            if (nomeParadaSample === "—") {
-                document.getElementById("resultado").innerHTML += `<div class="info" style="background:#fff0db; margin-top:10px;">⚠️ Atenção: Não foi identificada a coluna "NOME PARADA". Verifique o cabeçalho.</div>`;
+            const nomeSample = getFieldValue(sampleRow, fieldMapping.nomeCompleto.possible);
+            if (nomeSample === "—") {
+                document.getElementById("resultado").innerHTML += `<div class="info" style="background:#fff0db; margin-top:10px;">⚠️ Atenção: Não foi identificada a coluna "NOME COMPLETO". Verifique se o cabeçalho da planilha contém esta coluna exata (ou use sinônimos como "NOME PARADA" como fallback).</div>`;
             }
         }
     }
@@ -287,7 +288,7 @@
         document.getElementById("resultado").innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`;
     }
 
-    // Processar planilha e salvar no localStorage (para persistência local) e na memória
+    // Processar planilha e salvar no localStorage (persistência local)
     function processarUploadPlanilha(arquivo) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -308,9 +309,9 @@
             }
             dadosPlanilha = novaPlanilha;
             listaAbas = novasAbas;
-            salvarEstadoCompleto(); // salva no localStorage (incluindo planilha e logo)
+            salvarEstadoCompleto();
             atualizarInfoArquivo(`📁 ${arquivo.name} — Abas: ${listaAbas.join(", ")}`);
-            document.getElementById("resultado").innerHTML = `<div class="sucesso">✔ Planilha carregada! Agora consulte uma unidade.</div>`;
+            document.getElementById("resultado").innerHTML = `<div class="sucesso">✔ Planilha carregada! Agora consulte uma unidade buscando pelo NOME COMPLETO.</div>`;
             ultimaUnidade = null;
             document.getElementById("filtroArea").classList.remove("visivel");
             document.getElementById("unidade").value = "";
@@ -318,7 +319,7 @@
         reader.readAsArrayBuffer(arquivo);
     }
 
-    // Salvar todo o estado (planilha + logo) no localStorage para persistência no mesmo dispositivo
+    // Salvar estado completo (planilha + logo) no localStorage
     function salvarEstadoCompleto() {
         const estado = {
             dadosPlanilha: dadosPlanilha,
@@ -338,7 +339,7 @@
                     dadosPlanilha = estado.dadosPlanilha;
                     listaAbas = estado.listaAbas || Object.keys(dadosPlanilha);
                     atualizarInfoArquivo(`💾 Dados restaurados (${listaAbas.length} aba(s) disponíveis)`);
-                    document.getElementById("resultado").innerHTML = `<div class="sucesso">Planilha recuperada do armazenamento local. Consulte uma unidade.</div>`;
+                    document.getElementById("resultado").innerHTML = `<div class="sucesso">Planilha recuperada do armazenamento local. Consulte uma unidade buscando pelo NOME COMPLETO.</div>`;
                     if (estado.logo) {
                         localStorage.setItem("logo_mimo", estado.logo);
                         carregarLogoSalva();
@@ -352,7 +353,7 @@
         document.getElementById("fileInfo").innerHTML = msg;
     }
 
-    // Exportar backup (planilha + logo) para JSON
+    // Exportar backup (planilha + logo)
     function exportarBackup() {
         if (Object.keys(dadosPlanilha).length === 0) {
             alert("Nenhuma planilha carregada para exportar.");
@@ -375,7 +376,6 @@
         alert("Backup exportado com sucesso! Use o arquivo em outro dispositivo para importar.");
     }
 
-    // Importar backup
     function importarBackup(arquivoJson) {
         const reader = new FileReader();
         reader.onload = function(ev) {
@@ -386,14 +386,13 @@
                 }
                 dadosPlanilha = backup.dadosPlanilha;
                 listaAbas = backup.listaAbas || Object.keys(dadosPlanilha);
-                // restaurar logo se existir
                 if (backup.logo) {
                     localStorage.setItem("logo_mimo", backup.logo);
                     carregarLogoSalva();
                 }
-                salvarEstadoCompleto(); // persiste no localStorage
+                salvarEstadoCompleto();
                 atualizarInfoArquivo(`📥 Backup importado — ${listaAbas.length} aba(s) carregadas`);
-                document.getElementById("resultado").innerHTML = `<div class="sucesso">Backup restaurado! Agora consulte as unidades normalmente.</div>`;
+                document.getElementById("resultado").innerHTML = `<div class="sucesso">Backup restaurado! Agora consulte as unidades buscando pelo NOME COMPLETO.</div>`;
                 ultimaUnidade = null;
                 document.getElementById("filtroArea").classList.remove("visivel");
                 document.getElementById("unidade").value = "";
@@ -421,7 +420,7 @@
     function salvarLogo(base64) { 
         localStorage.setItem("logo_mimo", base64); 
         carregarLogoSalva();
-        salvarEstadoCompleto(); // para incluir logo no estado persistente
+        salvarEstadoCompleto();
     }
     function resetarLogo() { 
         localStorage.removeItem("logo_mimo"); 
@@ -484,7 +483,7 @@
         importFileInput.value = "";
     });
 
-    // Upload planilha normal
+    // Upload planilha
     const fileUploadInput = document.getElementById("fileUpload");
     fileUploadInput.addEventListener("change", (e) => {
         if (!masterAtivo) { alert("Modo Master necessário para carregar planilha."); return; }
@@ -500,10 +499,10 @@
 
     // Eventos principais de consulta
     document.getElementById("btnConsultar").addEventListener("click", carregarUnidade);
-    document.getElementById("filtro").addEventListener("input", aplicarFiltroParada);
+    document.getElementById("filtro").addEventListener("input", aplicarFiltroPorNomeCompleto);
     document.getElementById("unidade").addEventListener("keypress", e => e.key === "Enter" && carregarUnidade());
 
-    // Inicializar: tentar restaurar do localStorage
+    // Inicialização
     carregarEstadoSalvo();
     carregarLogoSalva();
 </script>
