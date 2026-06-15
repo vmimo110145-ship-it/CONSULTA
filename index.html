@@ -20,8 +20,8 @@
         .logo-upload-area { border: 1px solid #cbdcd8; border-radius: 20px; padding: 12px; text-align: center; margin-bottom: 18px; background: #ffffff; display: none; }
         .logo-upload-area.visivel { display: block; }
         .file-info { background: #e0f0ec; border-radius: 40px; padding: 10px 18px; margin-bottom: 24px; font-size: 14px; text-align: center; color: #0c4e43; }
-        .input-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        input { flex: 1; padding: 12px 18px; border: 1px solid #cbdcd8; border-radius: 44px; font-size: 16px; }
+        .input-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        select, input { flex: 1; padding: 12px 18px; border: 1px solid #cbdcd8; border-radius: 44px; font-size: 16px; background: white; }
         button { background: #1e7e6e; color: white; border: none; padding: 12px 28px; border-radius: 44px; font-weight: 600; cursor: pointer; }
         button:hover { background: #0f5f52; }
         .filtro-area { margin: 18px 0 12px; display: none; }
@@ -42,6 +42,7 @@
         .colunas-info { font-size: 0.75rem; background: #f4f9f7; padding: 10px; border-radius: 16px; margin-top: 12px; word-break: break-word; }
         @media (max-width: 600px) { .card strong { width: 100%; } }
         .acao-master-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; justify-content: center; }
+        .unidade-selector { display: flex; gap: 12px; flex: 2; }
     </style>
 </head>
 <body>
@@ -82,7 +83,10 @@
     <div id="colunasInfo" class="colunas-info" style="display:none;"></div>
 
     <div class="input-group">
-        <input type="text" id="unidade" placeholder="Nome da unidade (aba) ex: RC01, SP10, CENTRAL" autocomplete="off">
+        <div class="unidade-selector">
+            <select id="unidadeSelect" style="display:none;"></select>
+            <input type="text" id="unidade" placeholder="Ou digite o nome da unidade (aba)" autocomplete="off">
+        </div>
         <button id="btnConsultar">🔍 Selecionar Unidade</button>
     </div>
 
@@ -125,7 +129,6 @@
         return "—";
     }
 
-    // Mapeamento exato das colunas que você informou
     const fieldMapping = {
         nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
         turno: { possible: ["Turno", "TURNO"] },
@@ -192,6 +195,39 @@
         div.innerHTML = html;
     }
 
+    // Busca normalizada: ignora maiúsculas/minúsculas e espaços
+    function encontrarAba(nomeDigitado) {
+        const normalizado = nomeDigitado.trim().toLowerCase();
+        return Object.keys(dadosPlanilha).find(aba => aba.trim().toLowerCase() === normalizado) || null;
+    }
+
+    function carregarUnidade() {
+        let unidadeNome = document.getElementById("unidade").value.trim();
+        const select = document.getElementById("unidadeSelect");
+        // Se o select estiver visível e tiver um valor selecionado, prioriza ele
+        if (select.style.display !== "none" && select.value) {
+            unidadeNome = select.value;
+        }
+        if (!unidadeNome) { mostrarMensagemErro("Digite ou selecione o nome da unidade."); return; }
+        if (Object.keys(dadosPlanilha).length === 0) { mostrarMensagemErro("Nenhuma planilha carregada. Use Acesso Master e carregue um arquivo."); return; }
+        
+        const abaEncontrada = encontrarAba(unidadeNome);
+        if (!abaEncontrada) {
+            mostrarMensagemErro(`Unidade "${unidadeNome}" não encontrada. Abas disponíveis: ${listaAbas.join(", ")}. Verifique maiúsculas/minúsculas e espaços.`);
+            document.getElementById("filtroArea").classList.remove("visivel");
+            ultimaUnidade = null;
+            return;
+        }
+        ultimaUnidade = abaEncontrada;
+        registrosUnidade = dadosPlanilha[abaEncontrada];
+        document.getElementById("filtroArea").classList.add("visivel");
+        document.getElementById("filtro").value = "";
+        document.getElementById("resultado").innerHTML = `<div class="info">✅ Unidade "${escapeHtml(abaEncontrada)}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.</div>`;
+        // Sincroniza o campo de texto com o nome real da aba
+        document.getElementById("unidade").value = abaEncontrada;
+        if (select.style.display !== "none") select.value = abaEncontrada;
+    }
+
     function aplicarFiltro() {
         const termo = document.getElementById("filtro").value.trim();
         if (!ultimaUnidade) { document.getElementById("resultado").innerHTML = `<div class="info">✨ Selecione uma unidade primeiro.</div>`; return; }
@@ -202,23 +238,6 @@
             return nomeVal !== "—" && String(nomeVal).toLowerCase().includes(lowerTermo);
         });
         exibirResultados(filtrados, ultimaUnidade, termo);
-    }
-
-    function carregarUnidade() {
-        const unidadeNome = document.getElementById("unidade").value.trim();
-        if (!unidadeNome) { mostrarMensagemErro("Digite o nome da unidade."); return; }
-        if (Object.keys(dadosPlanilha).length === 0) { mostrarMensagemErro("Nenhuma planilha carregada. Use Acesso Master."); return; }
-        if (!dadosPlanilha[unidadeNome]) {
-            mostrarMensagemErro(`Unidade "${unidadeNome}" não encontrada. Abas: ${listaAbas.join(", ")}`);
-            document.getElementById("filtroArea").classList.remove("visivel");
-            ultimaUnidade = null;
-            return;
-        }
-        ultimaUnidade = unidadeNome;
-        registrosUnidade = dadosPlanilha[unidadeNome];
-        document.getElementById("filtroArea").classList.add("visivel");
-        document.getElementById("filtro").value = "";
-        document.getElementById("resultado").innerHTML = `<div class="info">✅ Unidade "${escapeHtml(unidadeNome)}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.</div>`;
     }
 
     function mostrarMensagemErro(msg) { document.getElementById("resultado").innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`; }
@@ -232,7 +251,24 @@
         const divColunas = document.getElementById("colunasInfo");
         divColunas.innerHTML = colunasHtml;
         divColunas.style.display = "block";
-        console.log("Colunas detectadas:", colunas);
+    }
+
+    function popularSelectUnidades() {
+        const select = document.getElementById("unidadeSelect");
+        select.innerHTML = "";
+        if (listaAbas.length === 0) {
+            select.style.display = "none";
+            return;
+        }
+        for (let aba of listaAbas) {
+            const option = document.createElement("option");
+            option.value = aba;
+            option.textContent = aba;
+            select.appendChild(option);
+        }
+        select.style.display = "block";
+        // Oculta o campo de texto para evitar confusão (mas mantém visível como fallback)
+        document.getElementById("unidade").style.display = "none";
     }
 
     function processarUpload(arquivo) {
@@ -256,6 +292,7 @@
             document.getElementById("resultado").innerHTML = `<div class="sucesso">Planilha carregada! Consulte uma unidade.</div>`;
             ultimaUnidade = null;
             document.getElementById("filtroArea").classList.remove("visivel");
+            popularSelectUnidades();  // Cria o dropdown
             salvarEstadoCompleto();
         };
         reader.readAsArrayBuffer(arquivo);
@@ -271,11 +308,12 @@
                 document.getElementById("fileInfo").innerHTML = `✅ Planilha em cache. Abas: ${listaAbas.join(", ")}`;
                 if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length)
                     mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+                popularSelectUnidades();
             } catch(e) {}
         }
     }
 
-    // --- persistência e logo ---
+    // Persistência e logo
     function salvarEstadoCompleto() {
         const estado = { dadosPlanilha, listaAbas, logo: localStorage.getItem("logo_mimo"), versao: "1.0" };
         localStorage.setItem("expresso_lucena_estado", JSON.stringify(estado));
@@ -292,6 +330,7 @@
                     if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length)
                         mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
                     if (estado.logo) { localStorage.setItem("logo_mimo", estado.logo); carregarLogoSalva(); }
+                    popularSelectUnidades();
                 }
             } catch(e) {}
         }
@@ -323,6 +362,7 @@
                 document.getElementById("resultado").innerHTML = `<div class="sucesso">Backup restaurado!</div>`;
                 ultimaUnidade = null;
                 document.getElementById("filtroArea").classList.remove("visivel");
+                popularSelectUnidades();
             } catch(e) { alert("Arquivo inválido."); }
         };
         reader.readAsText(arquivoJson);
@@ -361,6 +401,13 @@
     document.getElementById("btnConsultar").addEventListener("click", carregarUnidade);
     document.getElementById("filtro").addEventListener("input", aplicarFiltro);
     document.getElementById("unidade").addEventListener("keypress", e => e.key === "Enter" && carregarUnidade());
+    // Sincroniza o select com o campo de texto (caso o usuário digite)
+    document.getElementById("unidadeSelect").addEventListener("change", function() {
+        if (this.value) {
+            document.getElementById("unidade").value = this.value;
+            carregarUnidade();
+        }
+    });
 
     carregarSalvo();
     carregarEstadoSalvo();
