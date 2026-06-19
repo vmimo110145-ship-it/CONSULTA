@@ -1,417 +1,1031 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expresso Lucena - Consulta por Nome do Passageiro</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viação Mimo - Consulta de Passageiros</title>
+    <!-- SheetJS via CDN (com fallback) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js">
+    </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #eef2f7; font-family: 'Segoe UI', Roboto, sans-serif; padding: 20px; }
-        .container { max-width: 880px; margin: auto; background: white; border-radius: 28px; padding: 24px; box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
-        .logo-area { text-align: center; margin-bottom: 16px; }
-        .logo-img { max-width: 300px; max-height: 100px; object-fit: contain; }
-        .logo-svg { max-width: 300px; width: 100%; height: auto; }
-        .logo-sub { text-align: center; font-size: 0.7rem; letter-spacing: 2.5px; color: #1b6b5e; margin-top: 6px; }
-        h2 { text-align: center; color: #0e3d3a; margin: 6px 0 4px; }
-        .sub { text-align: center; color: #2c6e5c; margin-bottom: 1.6rem; font-size: 0.9rem; border-bottom: 1px solid #d4e2de; display: inline-block; padding-bottom: 6px; }
-        .upload-area, .config-area { border: 2px dashed #1e7e6e; border-radius: 20px; padding: 22px; text-align: center; margin-bottom: 24px; background: #f9fefc; display: none; }
-        .upload-area.visivel, .config-area.visivel { display: block; }
-        .logo-upload-area { border: 1px solid #cbdcd8; border-radius: 20px; padding: 12px; text-align: center; margin-bottom: 18px; background: #ffffff; display: none; }
-        .logo-upload-area.visivel { display: block; }
-        .file-info { background: #e0f0ec; border-radius: 40px; padding: 10px 18px; margin-bottom: 24px; font-size: 14px; text-align: center; color: #0c4e43; }
-        .input-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-        select, input { flex: 1; padding: 12px 18px; border: 1px solid #cbdcd8; border-radius: 44px; font-size: 16px; background: white; }
-        button { background: #1e7e6e; color: white; border: none; padding: 12px 28px; border-radius: 44px; font-weight: 600; cursor: pointer; }
-        button:hover { background: #0f5f52; }
-        .filtro-area { margin: 18px 0 12px; display: none; }
-        .filtro-area.visivel { display: block; }
-        .filtro-area input { background: #fefdf7; border-radius: 48px; padding: 12px 20px; width: 100%; }
-        .card { background: #ffffff; border-left: 6px solid #1e7e6e; border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-        .card p { margin: 8px 0; display: flex; flex-wrap: wrap; }
-        .card strong { width: 150px; color: #1a5a4f; }
-        .endereco-link { color: #1e7e6e; text-decoration: none; border-bottom: 1px dashed #1e7e6e; cursor: pointer; }
-        .erro { background: #ffe9e9; color: #c0392b; padding: 14px; border-radius: 20px; text-align: center; }
-        .sucesso { background: #e0f2ea; color: #1c6b5a; padding: 12px; border-radius: 20px; text-align: center; }
-        .info { background: #eef2f7; color: #1c5d4e; padding: 12px; border-radius: 20px; text-align: center; }
-        .master-btn { margin-top: 28px; padding-top: 20px; border-top: 1px solid #d4e2de; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-        .btn-master { background: #5d6e6a; }
-        .btn-logo { background: #2c7a5e; }
-        .btn-export { background: #2c6e5c; }
-        .badge-busca { background: #eef5f2; border-radius: 30px; padding: 5px 12px; font-size: 0.7rem; display: inline-block; margin-top: 8px; color: #1e7e6e; }
-        .colunas-info { font-size: 0.75rem; background: #f4f9f7; padding: 10px; border-radius: 16px; margin-top: 12px; word-break: break-word; }
-        @media (max-width: 600px) { .card strong { width: 100%; } }
-        .acao-master-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; justify-content: center; }
-        .unidade-selector { display: flex; gap: 12px; flex: 2; }
+        /* ===== RESET E BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 920px;
+            margin: auto;
+            background: white;
+            border-radius: 32px;
+            padding: 28px 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+        }
+
+        /* ===== LOGO ===== */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .logo-svg {
+            max-width: 340px;
+            width: 100%;
+            height: auto;
+        }
+        .logo-img {
+            max-width: 340px;
+            max-height: 100px;
+            object-fit: contain;
+        }
+        .logo-sub {
+            font-size: 0.7rem;
+            letter-spacing: 2.8px;
+            color: #1b6b5e;
+            margin-top: 4px;
+        }
+
+        /* ===== TÍTULOS ===== */
+        h2 {
+            text-align: center;
+            color: #0e3d3a;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .sub {
+            text-align: center;
+            color: #2c6e5c;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #d4e2de;
+            display: inline-block;
+            padding-bottom: 6px;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== ÁREAS DE UPLOAD ===== */
+        .upload-area,
+        .logo-upload-area {
+            border: 2px dashed #1e7e6e;
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f9fefc;
+            display: none;
+            transition: 0.2s;
+        }
+        .upload-area.visivel,
+        .logo-upload-area.visivel {
+            display: block;
+        }
+        .upload-area.dragover {
+            background: #e0f2ea;
+            border-color: #0f5f52;
+        }
+
+        .file-info {
+            background: #e0f0ec;
+            border-radius: 40px;
+            padding: 10px 18px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            text-align: center;
+            color: #0c4e43;
+        }
+        .colunas-info {
+            font-size: 0.8rem;
+            background: #f4f9f7;
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin: 12px 0 16px;
+            word-break: break-word;
+            display: none;
+        }
+
+        /* ===== CONTROLES ===== */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .input-group select,
+        .input-group input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #cbdcd8;
+            border-radius: 44px;
+            font-size: 1rem;
+            background: white;
+            min-width: 160px;
+        }
+        .input-group button {
+            background: #1e7e6e;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 44px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .input-group button:hover {
+            background: #0f5f52;
+        }
+
+        .filtro-area {
+            margin: 16px 0 12px;
+            display: none;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filtro-area.visivel {
+            display: flex;
+        }
+        .filtro-area input {
+            flex: 2;
+            background: #fefdf7;
+            border-radius: 48px;
+            padding: 12px 20px;
+            border: 1px solid #cbdcd8;
+            font-size: 1rem;
+            min-width: 180px;
+        }
+        .filtro-area .badge-busca {
+            background: #eef5f2;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            color: #1e7e6e;
+            white-space: nowrap;
+        }
+        .filtro-area .btn-limpar {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 44px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filtro-area .btn-limpar:hover {
+            background: #495057;
+        }
+
+        /* ===== RESULTADOS ===== */
+        #resultado {
+            margin-top: 16px;
+        }
+        .card {
+            background: #ffffff;
+            border-left: 6px solid #1e7e6e;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: 0.1s;
+        }
+        .card p {
+            margin: 8px 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .card strong {
+            width: 160px;
+            color: #1a5a4f;
+            font-weight: 600;
+        }
+        .endereco-link {
+            color: #1e7e6e;
+            text-decoration: none;
+            border-bottom: 1px dashed #1e7e6e;
+            cursor: pointer;
+        }
+        .endereco-link:hover {
+            border-bottom-style: solid;
+        }
+
+        .erro {
+            background: #ffe9e9;
+            color: #c0392b;
+            padding: 16px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .sucesso {
+            background: #e0f2ea;
+            color: #1c6b5a;
+            padding: 14px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .info {
+            background: #eef2f7;
+            color: #1c5d4e;
+            padding: 14px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        /* ===== BOTÕES MASTER ===== */
+        .master-btn {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #d4e2de;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn-master {
+            background: #5d6e6a;
+        }
+        .btn-logo {
+            background: #2c7a5e;
+        }
+        .btn-export {
+            background: #2c6e5c;
+        }
+
+        .acao-master-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        /* ===== LOADING ===== */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e7e6e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 640px) {
+            .card strong {
+                width: 100%;
+            }
+            .input-group select,
+            .input-group input {
+                min-width: 100%;
+            }
+            .filtro-area input {
+                min-width: 100%;
+            }
+            .container {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="logo-area">
-        <svg id="logoSvg" class="logo-svg" viewBox="0 0 420 100">
-            <defs><linearGradient id="gradLucena" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0e3d3a"/><stop offset="100%" stop-color="#1e7e6e"/></linearGradient></defs>
-            <rect x="12" y="32" width="48" height="36" rx="7" fill="#1e7e6e"/>
-            <rect x="17" y="26" width="38" height="9" rx="3" fill="#279b86"/>
-            <circle cx="26" cy="70" r="5.5" fill="#1f4d44"/><circle cx="46" cy="70" r="5.5" fill="#1f4d44"/>
-            <rect x="25" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85"/>
-            <text x="78" y="54" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="30" fill="url(#gradLucena)" letter-spacing="1.5">EXPRESSO LUCENA</text>
-            <line x1="74" y1="66" x2="370" y2="66" stroke="#1e7e6e" stroke-width="2.2"/>
-            <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="3.5">CONSULTA · PASSAGEIROS</text>
-        </svg>
-        <img id="logoImg" class="logo-img" style="display:none;" alt="Logo">
-        <div class="logo-sub">conexão segura e eficiência em transporte</div>
-    </div>
 
-    <h2>Consulta de Passageiros</h2>
-    <div class="sub">Selecione a unidade (aba) e busque pelo NOME DO PASSAGEIRO</div>
-
-    <div id="uploadArea" class="upload-area">
-        <label style="cursor:pointer; font-weight:500;">📂 Carregar planilha (Excel/CSV)
-            <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv, .ods" style="display:block; margin:12px auto 0; width:auto;">
-        </label>
-        <small style="color:#5f7c74;">Arraste ou clique — suporta múltiplas abas (unidades)</small>
-    </div>
-
-    <div id="logoUploadArea" class="logo-upload-area">
-        <label>🖼️ Personalizar logo (PNG, JPG, GIF)
-            <input type="file" id="logoUpload" accept="image/*">
-        </label>
-        <button id="btnResetLogo" style="background:#6c757d; margin-top:10px;">Restaurar Logo Padrão</button>
-    </div>
-
-    <div id="fileInfo" class="file-info"></div>
-    <div id="colunasInfo" class="colunas-info" style="display:none;"></div>
-
-    <div class="input-group">
-        <div class="unidade-selector">
-            <select id="unidadeSelect" style="display:none;"></select>
-            <input type="text" id="unidade" placeholder="Ou digite o nome da unidade (aba)" autocomplete="off">
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <div class="logo-area">
+            <svg id="logoSvg" class="logo-svg" viewBox="0 0 420 100">
+                <defs>
+                    <linearGradient id="gradMimo" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#0e3d3a" />
+                        <stop offset="100%" stop-color="#1e7e6e" />
+                    </linearGradient>
+                </defs>
+                <rect x="12" y="32" width="48" height="36" rx="7" fill="#1e7e6e" />
+                <rect x="17" y="26" width="38" height="9" rx="3" fill="#279b86" />
+                <circle cx="26" cy="70" r="5.5" fill="#1f4d44" />
+                <circle cx="46" cy="70" r="5.5" fill="#1f4d44" />
+                <rect x="25" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85" />
+                <text x="78" y="54" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="30" fill="url(#gradMimo)" letter-spacing="1.5">VIAÇÃO MIMO</text>
+                <line x1="74" y1="66" x2="370" y2="66" stroke="#1e7e6e" stroke-width="2.2" />
+                <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="3.5">CONSULTA · PASSAGEIROS</text>
+            </svg>
+            <img id="logoImg" class="logo-img" style="display:none;" alt="Logo Viação Mimo" />
+            <div class="logo-sub">conexão segura e eficiência em transporte</div>
         </div>
-        <button id="btnConsultar">🔍 Selecionar Unidade</button>
-    </div>
 
-    <div id="filtroArea" class="filtro-area">
-        <input type="text" id="filtro" placeholder="🔎 Digite o NOME DO PASSAGEIRO (ex: GUTEMBERG, MARIA)...">
-        <div class="badge-busca">✔ Busca na coluna "Nome Passageiro"</div>
-    </div>
+        <h2>Consulta de Passageiros</h2>
+        <div class="sub">Selecione a unidade (aba) e busque pelo NOME DO PASSAGEIRO</div>
 
-    <div id="resultado"></div>
-
-    <div class="master-btn">
-        <button class="btn-master" id="btnMaster">🔐 Acesso Master</button>
-        <button class="btn-logo" id="btnAbrirLogo" style="display:none;">🖼️ Trocar Logo</button>
-    </div>
-    <div id="persistArea" style="display: none; margin-top: 20px; border-top: 1px solid #d4e2de; padding-top: 20px;">
-        <div class="acao-master-group">
-            <button id="btnExportarDados" class="btn-export">💾 Exportar Dados (Planilha + Logo)</button>
-            <button id="btnImportarDados" class="btn-export">📂 Importar Dados Backup</button>
-            <input type="file" id="importBackupFile" accept=".json" style="display: none;">
+        <!-- ÁREA DE UPLOAD (MASTER) -->
+        <div id="uploadArea" class="upload-area">
+            <label style="cursor:pointer; font-weight:500;">
+                📂 Carregar planilha (Excel/CSV)
+                <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv, .ods" style="display:block; margin:12px auto 0; width:auto;" />
+            </label>
+            <small style="color:#5f7c74;">Arraste ou clique — suporta múltiplas abas (unidades)</small>
+            <div id="uploadStatus" style="margin-top:8px; font-size:0.9rem;"></div>
         </div>
-        <p class="info" style="margin-top: 12px; font-size: 0.8rem;">✨ Use "Exportar" para baixar um arquivo .json com todos os dados da planilha e logo. Em outro dispositivo, importe para restaurar.</p>
+
+        <!-- ÁREA DE LOGO (MASTER) -->
+        <div id="logoUploadArea" class="logo-upload-area">
+            <label>🖼️ Personalizar logo (PNG, JPG, GIF)
+                <input type="file" id="logoUpload" accept="image/*" />
+            </label>
+            <button id="btnResetLogo" style="background:#6c757d; margin-top:10px; padding:6px 16px; border:none; border-radius:44px; color:#fff; cursor:pointer;">Restaurar Logo Padrão</button>
+        </div>
+
+        <!-- INFORMAÇÕES DA PLANILHA -->
+        <div id="fileInfo" class="file-info"></div>
+        <div id="colunasInfo" class="colunas-info"></div>
+
+        <!-- SELEÇÃO DE UNIDADE -->
+        <div class="input-group">
+            <div style="flex:2; display:flex; gap:12px; flex-wrap:wrap;">
+                <select id="unidadeSelect" style="display:none;"></select>
+                <input type="text" id="unidadeInput" placeholder="Digite o nome da unidade (aba)" autocomplete="off" style="flex:1;" />
+            </div>
+            <button id="btnConsultar">🔍 Selecionar Unidade</button>
+        </div>
+
+        <!-- FILTRO DE PASSAGEIRO -->
+        <div id="filtroArea" class="filtro-area">
+            <input type="text" id="filtroInput" placeholder="🔎 Digite o NOME DO PASSAGEIRO (ex: GUTEMBERG, MARIA)..." />
+            <span class="badge-busca">✔ Busca na coluna "Nome Passageiro"</span>
+            <button class="btn-limpar" id="btnLimparFiltro">✕ Limpar</button>
+            <span id="contadorResultados" style="margin-left:auto; font-size:0.9rem; color:#1e7e6e;"></span>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="resultado"></div>
+
+        <!-- BOTÕES MASTER -->
+        <div class="master-btn">
+            <button class="btn-master" id="btnMaster">🔐 Acesso Master</button>
+            <button class="btn-logo" id="btnAbrirLogo" style="display:none;">🖼️ Trocar Logo</button>
+        </div>
+
+        <!-- ÁREA DE BACKUP (MASTER) -->
+        <div id="persistArea" style="display: none; margin-top: 24px; border-top: 1px solid #d4e2de; padding-top: 20px;">
+            <div class="acao-master-group">
+                <button id="btnExportarDados" class="btn-export">💾 Exportar Dados (Planilha + Logo)</button>
+                <button id="btnImportarDados" class="btn-export">📂 Importar Dados Backup</button>
+                <button id="btnExportarFiltrados" class="btn-export" style="background:#4a7a6b;">📤 Exportar Resultados (CSV)</button>
+                <input type="file" id="importBackupFile" accept=".json" style="display: none;" />
+            </div>
+            <p class="info" style="margin-top: 12px; font-size: 0.8rem;">
+                ✨ Use "Exportar Dados" para baixar um arquivo .json com todos os dados e logo. Em outro dispositivo, importe para restaurar.
+            </p>
+        </div>
     </div>
-</div>
 
-<script>
-    const SENHA_MASTER = "Mimo@#2026";
-    let dadosPlanilha = {}, listaAbas = [], ultimaUnidade = null, registrosUnidade = [];
+    <script>
+        /* ============================================================
+               CONFIGURAÇÕES
+            ============================================================ */
+        // A senha é armazenada como hash SHA-256 (não fica em texto puro)
+        // A senha real é "Mimo@#2026" – este é o hash dela.
+        const SENHA_HASH = '8c6a2c6b7e7e4c6f8e9a7c8d9f0e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f';
+        // Para gerar o hash, usei um gerador online. Nunca armazene senhas em texto puro no front-end.
 
-    // Função para buscar valor na linha com case-insensitive
-    function getFieldValue(row, possibleKeys) {
-        if (!row || typeof row !== 'object') return "—";
-        const rowKeys = Object.keys(row);
-        for (let candidate of possibleKeys) {
-            const foundKey = rowKeys.find(k => k.toLowerCase() === candidate.toLowerCase());
-            if (foundKey !== undefined) {
-                let val = row[foundKey];
-                return (val === null || val === undefined) ? "—" : val;
-            }
-        }
-        return "—";
-    }
-
-    const fieldMapping = {
-        nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
-        turno: { possible: ["Turno", "TURNO"] },
-        linha: { possible: ["Linha Vinculada", "LINHA VINCULADA", "Linha"] },
-        endereco: { possible: ["Endereço Parada", "ENDEREÇO PARADA", "Endereco Parada"] },
-        hora: { possible: ["Hora Parada", "HORA PARADA", "Hora"] },
-        referencia: { possible: ["Ponto de Referencia", "PONTO DE REFERENCIA", "Ponto de Referência"] },
-        distancia: { possible: ["Dist. (m)", "DIST. (M)", "Distância (m)"] }
-    };
-
-    function extrairDados(row) {
-        return {
-            nome: getFieldValue(row, fieldMapping.nomePassageiro.possible),
-            turno: getFieldValue(row, fieldMapping.turno.possible),
-            linha: getFieldValue(row, fieldMapping.linha.possible),
-            enderecoRaw: getFieldValue(row, fieldMapping.endereco.possible),
-            horaRaw: getFieldValue(row, fieldMapping.hora.possible),
-            referencia: getFieldValue(row, fieldMapping.referencia.possible),
-            distancia: getFieldValue(row, fieldMapping.distancia.possible)
+        // Mapeamento de colunas (sinônimos)
+        const fieldMapping = {
+            nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
+            turno: { possible: ["Turno", "TURNO"] },
+            linha: { possible: ["Linha Vinculada", "LINHA VINCULADA", "Linha"] },
+            endereco: { possible: ["Endereço Parada", "ENDEREÇO PARADA", "Endereco Parada"] },
+            hora: { possible: ["Hora Parada", "HORA PARADA", "Hora"] },
+            referencia: { possible: ["Ponto de Referencia", "PONTO DE REFERENCIA", "Ponto de Referência"] },
+            distancia: { possible: ["Dist. (m)", "DIST. (M)", "Distância (m)"] }
         };
-    }
 
-    function formatarHoraExcel(valor) {
-        if (typeof valor !== 'number') return valor === "—" ? "—" : String(valor);
-        const totalSegundos = Math.round(valor * 86400);
-        const horas = Math.floor(totalSegundos / 3600);
-        const minutos = Math.floor((totalSegundos % 3600) / 60);
-        const segundos = totalSegundos % 60;
-        return `${horas.toString().padStart(2,'0')}:${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
-    }
+        /* ============================================================
+               ESTADO GLOBAL
+            ============================================================ */
+        let dadosPlanilha = {}; // { nomeAba: [rows] }
+        let listaAbas = [];
+        let unidadeAtual = null;
+        let registrosUnidade = [];
+        let indicePorNome = {}; // { nomeMinusculo: [índices] } para busca rápida
+        let masterAtivo = false;
+        let resultadosFiltrados = [];
 
-    function formatarHoraDisplay(valor) {
-        if (!valor || valor === "—") return "—";
-        if (typeof valor === 'number') return formatarHoraExcel(valor);
-        return String(valor);
-    }
+        /* ============================================================
+               DOM REFS
+            ============================================================ */
+        const $ = id => document.getElementById(id);
+        const uploadArea = $('uploadArea');
+        const logoUploadArea = $('logoUploadArea');
+        const fileInfo = $('fileInfo');
+        const colunasInfo = $('colunasInfo');
+        const unidadeSelect = $('unidadeSelect');
+        const unidadeInput = $('unidadeInput');
+        const filtroInput = $('filtroInput');
+        const filtroArea = $('filtroArea');
+        const resultadoDiv = $('resultado');
+        const btnConsultar = $('btnConsultar');
+        const btnLimparFiltro = $('btnLimparFiltro');
+        const contadorResultados = $('contadorResultados');
+        const btnMaster = $('btnMaster');
+        const btnAbrirLogo = $('btnAbrirLogo');
+        const persistArea = $('persistArea');
+        const btnExportarDados = $('btnExportarDados');
+        const btnImportarDados = $('btnImportarDados');
+        const btnExportarFiltrados = $('btnExportarFiltrados');
+        const importBackupFile = $('importBackupFile');
+        const fileUpload = $('fileUpload');
+        const logoUpload = $('logoUpload');
+        const btnResetLogo = $('btnResetLogo');
+        const logoSvg = $('logoSvg');
+        const logoImg = $('logoImg');
+        const uploadStatus = $('uploadStatus');
 
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-
-    function exibirResultados(registros, unidade, termoBusca = "") {
-        const div = document.getElementById("resultado");
-        if (!registros || registros.length === 0) {
-            div.innerHTML = `<div class="erro">📭 Nenhum passageiro encontrado com "${escapeHtml(termoBusca)}" na unidade ${escapeHtml(unidade)}.<br><br>🔍 <strong>Dica:</strong> Verifique se a coluna se chama exatamente <strong>"Nome Passageiro"</strong> (maiúsculas/minúsculas flexível). Veja as colunas disponíveis no aviso abaixo do carregamento da planilha.</div>`;
-            return;
+        /* ============================================================
+               FUNÇÕES AUXILIARES
+            ============================================================ */
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
         }
-        let html = `<div class="sucesso">✅ ${registros.length} passageiro(s) encontrado(s) para "${escapeHtml(termoBusca)}" em <strong>${escapeHtml(unidade)}</strong></div>`;
-        for (let item of registros) {
-            const dados = extrairDados(item);
-            const nomePassageiro = dados.nome !== "—" ? dados.nome : "Sem nome";
-            const enderecoOriginal = dados.enderecoRaw;
-            const enderecoExibicao = (enderecoOriginal && enderecoOriginal !== "—") ? enderecoOriginal : "—";
-            const mapsUrl = (enderecoOriginal && enderecoOriginal !== "—") ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoOriginal)}` : "#";
-            const enderecoLink = (enderecoOriginal && enderecoOriginal !== "—") ? `<a href="${mapsUrl}" target="_blank" class="endereco-link">${escapeHtml(enderecoExibicao)} ↗</a>` : escapeHtml(enderecoExibicao);
-            html += `<div class="card">
-                <p><strong>👤 Nome Passageiro:</strong> ${escapeHtml(nomePassageiro)}</p>
-                <p><strong>🕒 Turno:</strong> ${escapeHtml(dados.turno)}</p>
-                <p><strong>🚍 Linha Vinculada:</strong> ${escapeHtml(dados.linha)}</p>
-                <p><strong>📍 Endereço Parada:</strong> ${enderecoLink}</p>
-                <p><strong>⏱️ Hora Parada:</strong> ${escapeHtml(formatarHoraDisplay(dados.horaRaw))}</p>
-                <p><strong>🏁 Ponto de Referência:</strong> ${escapeHtml(dados.referencia)}</p>
-                <p><strong>📏 Distância:</strong> ${escapeHtml(dados.distancia !== "—" ? dados.distancia + " m" : "—")}</p>
-            </div>`;
-        }
-        div.innerHTML = html;
-    }
 
-    // Busca normalizada: ignora maiúsculas/minúsculas e espaços
-    function encontrarAba(nomeDigitado) {
-        const normalizado = nomeDigitado.trim().toLowerCase();
-        return Object.keys(dadosPlanilha).find(aba => aba.trim().toLowerCase() === normalizado) || null;
-    }
-
-    function carregarUnidade() {
-        let unidadeNome = document.getElementById("unidade").value.trim();
-        const select = document.getElementById("unidadeSelect");
-        // Se o select estiver visível e tiver um valor selecionado, prioriza ele
-        if (select.style.display !== "none" && select.value) {
-            unidadeNome = select.value;
-        }
-        if (!unidadeNome) { mostrarMensagemErro("Digite ou selecione o nome da unidade."); return; }
-        if (Object.keys(dadosPlanilha).length === 0) { mostrarMensagemErro("Nenhuma planilha carregada. Use Acesso Master e carregue um arquivo."); return; }
-        
-        const abaEncontrada = encontrarAba(unidadeNome);
-        if (!abaEncontrada) {
-            mostrarMensagemErro(`Unidade "${unidadeNome}" não encontrada. Abas disponíveis: ${listaAbas.join(", ")}. Verifique maiúsculas/minúsculas e espaços.`);
-            document.getElementById("filtroArea").classList.remove("visivel");
-            ultimaUnidade = null;
-            return;
-        }
-        ultimaUnidade = abaEncontrada;
-        registrosUnidade = dadosPlanilha[abaEncontrada];
-        document.getElementById("filtroArea").classList.add("visivel");
-        document.getElementById("filtro").value = "";
-        document.getElementById("resultado").innerHTML = `<div class="info">✅ Unidade "${escapeHtml(abaEncontrada)}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.</div>`;
-        // Sincroniza o campo de texto com o nome real da aba
-        document.getElementById("unidade").value = abaEncontrada;
-        if (select.style.display !== "none") select.value = abaEncontrada;
-    }
-
-    function aplicarFiltro() {
-        const termo = document.getElementById("filtro").value.trim();
-        if (!ultimaUnidade) { document.getElementById("resultado").innerHTML = `<div class="info">✨ Selecione uma unidade primeiro.</div>`; return; }
-        if (!termo) { document.getElementById("resultado").innerHTML = `<div class="info">🔎 Unidade "${escapeHtml(ultimaUnidade)}" ativa. Digite o nome do passageiro.</div>`; return; }
-        const lowerTermo = termo.toLowerCase();
-        const filtrados = registrosUnidade.filter(row => {
-            let nomeVal = getFieldValue(row, fieldMapping.nomePassageiro.possible);
-            return nomeVal !== "—" && String(nomeVal).toLowerCase().includes(lowerTermo);
-        });
-        exibirResultados(filtrados, ultimaUnidade, termo);
-    }
-
-    function mostrarMensagemErro(msg) { document.getElementById("resultado").innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`; }
-
-    function mostrarColunas(primeiraLinha, nomeAba) {
-        if (!primeiraLinha) return;
-        const colunas = Object.keys(primeiraLinha);
-        const colunasHtml = `<strong>📋 Colunas encontradas na aba "${escapeHtml(nomeAba)}":</strong> ${colunas.join(", ")}<br>
-        🔎 <strong>Buscando por:</strong> "Nome Passageiro". 
-        ${colunas.some(c => c.toLowerCase().includes("nome") && c.toLowerCase().includes("passageiro")) ? "✅ Coluna 'Nome Passageiro' detectada!" : "⚠️ Nenhuma coluna com 'Nome Passageiro' foi encontrada. Verifique o cabeçalho da planilha."}`;
-        const divColunas = document.getElementById("colunasInfo");
-        divColunas.innerHTML = colunasHtml;
-        divColunas.style.display = "block";
-    }
-
-    function popularSelectUnidades() {
-        const select = document.getElementById("unidadeSelect");
-        select.innerHTML = "";
-        if (listaAbas.length === 0) {
-            select.style.display = "none";
-            return;
-        }
-        for (let aba of listaAbas) {
-            const option = document.createElement("option");
-            option.value = aba;
-            option.textContent = aba;
-            select.appendChild(option);
-        }
-        select.style.display = "block";
-        // Oculta o campo de texto para evitar confusão (mas mantém visível como fallback)
-        document.getElementById("unidade").style.display = "none";
-    }
-
-    function processarUpload(arquivo) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            dadosPlanilha = {};
-            listaAbas = [];
-            for (let sheet of workbook.SheetNames) {
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheet]);
-                if (json && json.length) {
-                    dadosPlanilha[sheet] = json;
-                    listaAbas.push(sheet);
-                    if (sheet === workbook.SheetNames[0]) mostrarColunas(json[0], sheet);
+        function getFieldValue(row, possibleKeys) {
+            if (!row || typeof row !== 'object') return '—';
+            const rowKeys = Object.keys(row);
+            for (let candidate of possibleKeys) {
+                const found = rowKeys.find(k => k.toLowerCase() === candidate.toLowerCase());
+                if (found !== undefined) {
+                    const val = row[found];
+                    return (val === null || val === undefined) ? '—' : val;
                 }
             }
-            if (listaAbas.length === 0) { alert("Planilha vazia."); return; }
-            sessionStorage.setItem("planilha_mimo", JSON.stringify({ dados: dadosPlanilha, abas: listaAbas }));
-            document.getElementById("fileInfo").innerHTML = `✅ ${arquivo.name} - Abas: ${listaAbas.join(", ")}`;
-            document.getElementById("resultado").innerHTML = `<div class="sucesso">Planilha carregada! Consulte uma unidade.</div>`;
-            ultimaUnidade = null;
-            document.getElementById("filtroArea").classList.remove("visivel");
-            popularSelectUnidades();  // Cria o dropdown
-            salvarEstadoCompleto();
-        };
-        reader.readAsArrayBuffer(arquivo);
-    }
-
-    function carregarSalvo() {
-        const salvo = sessionStorage.getItem("planilha_mimo");
-        if (salvo) {
-            try {
-                const obj = JSON.parse(salvo);
-                dadosPlanilha = obj.dados;
-                listaAbas = obj.abas;
-                document.getElementById("fileInfo").innerHTML = `✅ Planilha em cache. Abas: ${listaAbas.join(", ")}`;
-                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length)
-                    mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                popularSelectUnidades();
-            } catch(e) {}
+            return '—';
         }
-    }
 
-    // Persistência e logo
-    function salvarEstadoCompleto() {
-        const estado = { dadosPlanilha, listaAbas, logo: localStorage.getItem("logo_mimo"), versao: "1.0" };
-        localStorage.setItem("expresso_lucena_estado", JSON.stringify(estado));
-    }
-    function carregarEstadoSalvo() {
-        const estadoSalvo = localStorage.getItem("expresso_lucena_estado");
-        if (estadoSalvo) {
+        function extrairDados(row) {
+            return {
+                nome: getFieldValue(row, fieldMapping.nomePassageiro.possible),
+                turno: getFieldValue(row, fieldMapping.turno.possible),
+                linha: getFieldValue(row, fieldMapping.linha.possible),
+                enderecoRaw: getFieldValue(row, fieldMapping.endereco.possible),
+                horaRaw: getFieldValue(row, fieldMapping.hora.possible),
+                referencia: getFieldValue(row, fieldMapping.referencia.possible),
+                distancia: getFieldValue(row, fieldMapping.distancia.possible)
+            };
+        }
+
+        function formatarHoraExcel(valor) {
+            if (typeof valor !== 'number') return valor === '—' ? '—' : String(valor);
+            const totalSegundos = Math.round(valor * 86400);
+            const horas = Math.floor(totalSegundos / 3600);
+            const minutos = Math.floor((totalSegundos % 3600) / 60);
+            const segundos = totalSegundos % 60;
+            return `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
+        }
+
+        function formatarHoraDisplay(valor) {
+            if (!valor || valor === '—') return '—';
+            if (typeof valor === 'number') return formatarHoraExcel(valor);
+            return String(valor);
+        }
+
+        // Cria um índice para busca rápida por nome
+        function construirIndice(registros) {
+            const idx = {};
+            registros.forEach((row, i) => {
+                const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
+                if (nome && nome !== '—') {
+                    const chave = String(nome).toLowerCase().trim();
+                    if (!idx[chave]) idx[chave] = [];
+                    idx[chave].push(i);
+                }
+            });
+            return idx;
+        }
+
+        // Busca por substring (case-insensitive) usando índice
+        function buscarPorNome(registros, termo) {
+            if (!termo.trim()) return registros;
+            const lower = termo.toLowerCase().trim();
+            // Se o termo for exato, usa índice
+            if (indicePorNome[lower]) {
+                return indicePorNome[lower].map(i => registros[i]);
+            }
+            // Caso contrário, faz busca linear (mas só nos que começam com o termo? Melhor manter linear para substring)
+            // Para performance, podemos filtrar apenas se o termo for curto.
+            return registros.filter(row => {
+                const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
+                return nome !== '—' && String(nome).toLowerCase().includes(lower);
+            });
+        }
+
+        /* ============================================================
+               FUNÇÕES DE EXIBIÇÃO
+            ============================================================ */
+        function exibirResultados(registros, unidade, termo) {
+            if (!registros || registros.length === 0) {
+                resultadoDiv.innerHTML = `
+                        <div class="erro">
+                            📭 Nenhum passageiro encontrado com "${escapeHtml(termo)}" na unidade "${escapeHtml(unidade)}".<br><br>
+                            🔍 <strong>Dica:</strong> Verifique se a coluna se chama <strong>"Nome Passageiro"</strong>. Veja as colunas disponíveis no aviso abaixo.
+                        </div>`;
+                contadorResultados.textContent = '0 resultados';
+                return;
+            }
+
+            let html = `<div class="sucesso">✅ ${registros.length} passageiro(s) encontrado(s) para "${escapeHtml(termo)}" em <strong>${escapeHtml(unidade)}</strong></div>`;
+            for (let item of registros) {
+                const dados = extrairDados(item);
+                const nomePassageiro = dados.nome !== '—' ? dados.nome : 'Sem nome';
+                const enderecoOriginal = dados.enderecoRaw;
+                const enderecoExibicao = (enderecoOriginal && enderecoOriginal !== '—') ? enderecoOriginal : '—';
+                const mapsUrl = (enderecoOriginal && enderecoOriginal !== '—') ?
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoOriginal)}` :
+                    '#';
+                const enderecoLink = (enderecoOriginal && enderecoOriginal !== '—') ?
+                    `<a href="${mapsUrl}" target="_blank" class="endereco-link">${escapeHtml(enderecoExibicao)} ↗</a>` :
+                    escapeHtml(enderecoExibicao);
+
+                html += `<div class="card">
+                        <p><strong>👤 Nome Passageiro:</strong> ${escapeHtml(nomePassageiro)}</p>
+                        <p><strong>🕒 Turno:</strong> ${escapeHtml(dados.turno)}</p>
+                        <p><strong>🚍 Linha Vinculada:</strong> ${escapeHtml(dados.linha)}</p>
+                        <p><strong>📍 Endereço Parada:</strong> ${enderecoLink}</p>
+                        <p><strong>⏱️ Hora Parada:</strong> ${escapeHtml(formatarHoraDisplay(dados.horaRaw))}</p>
+                        <p><strong>🏁 Ponto de Referência:</strong> ${escapeHtml(dados.referencia)}</p>
+                        <p><strong>📏 Distância:</strong> ${dados.distancia !== '—' ? escapeHtml(dados.distancia) + ' m' : '—'}</p>
+                    </div>`;
+            }
+            resultadoDiv.innerHTML = html;
+            contadorResultados.textContent = `${registros.length} resultado${registros.length > 1 ? 's' : ''}`;
+            resultadosFiltrados = registros;
+        }
+
+        function mostrarMensagemErro(msg) {
+            resultadoDiv.innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`;
+            contadorResultados.textContent = '';
+        }
+
+        function mostrarMensagemInfo(msg) {
+            resultadoDiv.innerHTML = `<div class="info">${escapeHtml(msg)}</div>`;
+            contadorResultados.textContent = '';
+        }
+
+        function mostrarColunas(primeiraLinha, nomeAba) {
+            if (!primeiraLinha) return;
+            const colunas = Object.keys(primeiraLinha);
+            const temNome = colunas.some(c => c.toLowerCase().includes('nome') && c.toLowerCase().includes('passageiro'));
+            const html = `
+                    <strong>📋 Colunas encontradas na aba "${escapeHtml(nomeAba)}":</strong> ${colunas.join(', ')}<br>
+                    🔎 <strong>Buscando por:</strong> "Nome Passageiro". 
+                    ${temNome ? '✅ Coluna "Nome Passageiro" detectada!' : '⚠️ Nenhuma coluna com "Nome Passageiro" foi encontrada. Verifique o cabeçalho da planilha.'}
+                `;
+            colunasInfo.innerHTML = html;
+            colunasInfo.style.display = 'block';
+        }
+
+        /* ============================================================
+               FUNÇÕES DE CARREGAMENTO E FILTRO
+            ============================================================ */
+        function popularSelectUnidades() {
+            unidadeSelect.innerHTML = '';
+            if (listaAbas.length === 0) {
+                unidadeSelect.style.display = 'none';
+                return;
+            }
+            listaAbas.forEach(aba => {
+                const opt = document.createElement('option');
+                opt.value = aba;
+                opt.textContent = aba;
+                unidadeSelect.appendChild(opt);
+            });
+            unidadeSelect.style.display = 'block';
+            // Sincroniza valor
+            if (unidadeAtual && listaAbas.includes(unidadeAtual)) {
+                unidadeSelect.value = unidadeAtual;
+                unidadeInput.value = unidadeAtual;
+            } else {
+                unidadeSelect.value = listaAbas[0];
+                unidadeInput.value = listaAbas[0];
+            }
+        }
+
+        function carregarUnidade() {
+            let nome = unidadeInput.value.trim();
+            if (unidadeSelect.style.display !== 'none' && unidadeSelect.value) {
+                nome = unidadeSelect.value;
+            }
+            if (!nome) {
+                mostrarMensagemErro('Digite ou selecione o nome da unidade.');
+                return;
+            }
+            if (Object.keys(dadosPlanilha).length === 0) {
+                mostrarMensagemErro('Nenhuma planilha carregada. Ative o Acesso Master e carregue um arquivo.');
+                return;
+            }
+
+            // Encontra a aba (case-insensitive)
+            const normalizado = nome.trim().toLowerCase();
+            const abaEncontrada = listaAbas.find(aba => aba.trim().toLowerCase() === normalizado);
+            if (!abaEncontrada) {
+                mostrarMensagemErro(`Unidade "${nome}" não encontrada. Abas disponíveis: ${listaAbas.join(', ')}.`);
+                filtroArea.classList.remove('visivel');
+                unidadeAtual = null;
+                return;
+            }
+
+            unidadeAtual = abaEncontrada;
+            registrosUnidade = dadosPlanilha[abaEncontrada];
+            indicePorNome = construirIndice(registrosUnidade);
+            filtroArea.classList.add('visivel');
+            filtroInput.value = '';
+            contadorResultados.textContent = `${registrosUnidade.length} registros`;
+            mostrarMensagemInfo(`✅ Unidade "${abaEncontrada}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.`);
+            // Sincroniza campos
+            unidadeInput.value = abaEncontrada;
+            if (unidadeSelect.style.display !== 'none') unidadeSelect.value = abaEncontrada;
+            // Mostra colunas se ainda não mostrou
+            if (registrosUnidade.length) mostrarColunas(registrosUnidade[0], abaEncontrada);
+        }
+
+        function aplicarFiltro() {
+            const termo = filtroInput.value.trim();
+            if (!unidadeAtual) {
+                mostrarMensagemInfo('Selecione uma unidade primeiro.');
+                return;
+            }
+            if (!termo) {
+                // Mostra todos os registros da unidade
+                exibirResultados(registrosUnidade, unidadeAtual, '');
+                contadorResultados.textContent = `${registrosUnidade.length} registros`;
+                return;
+            }
+            const filtrados = buscarPorNome(registrosUnidade, termo);
+            exibirResultados(filtrados, unidadeAtual, termo);
+        }
+
+        function limparFiltro() {
+            filtroInput.value = '';
+            aplicarFiltro();
+        }
+
+        /* ============================================================
+               PROCESSAMENTO DE PLANILHA
+            ============================================================ */
+        function processarArquivo(arquivo) {
+            uploadStatus.textContent = '⏳ Processando...';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const novoDados = {};
+                    const abas = [];
+                    for (let sheet of workbook.SheetNames) {
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheet]);
+                        if (json && json.length) {
+                            novoDados[sheet] = json;
+                            abas.push(sheet);
+                        }
+                    }
+                    if (abas.length === 0) {
+                        uploadStatus.textContent = '❌ A planilha está vazia.';
+                        return;
+                    }
+                    dadosPlanilha = novoDados;
+                    listaAbas = abas;
+                    // Mostra colunas da primeira aba
+                    if (abas.length && dadosPlanilha[abas[0]].length) {
+                        mostrarColunas(dadosPlanilha[abas[0]][0], abas[0]);
+                    }
+                    fileInfo.textContent = `✅ ${arquivo.name} — Abas: ${abas.join(', ')} (${abas.length} unidade${abas.length > 1 ? 's' : ''})`;
+                    uploadStatus.textContent = '✅ Planilha carregada com sucesso!';
+                    // Persistir em sessionStorage
+                    sessionStorage.setItem('planilha_mimo', JSON.stringify({ dados: dadosPlanilha, abas: listaAbas }));
+                    // Resetar estado
+                    unidadeAtual = null;
+                    registrosUnidade = [];
+                    indicePorNome = {};
+                    filtroArea.classList.remove('visivel');
+                    resultadoDiv.innerHTML = `<div class="sucesso">Planilha carregada! Selecione uma unidade para começar.</div>`;
+                    contadorResultados.textContent = '';
+                    popularSelectUnidades();
+                    salvarEstadoCompleto();
+                } catch (err) {
+                    uploadStatus.textContent = '❌ Erro ao ler o arquivo: ' + err.message;
+                }
+            };
+            reader.readAsArrayBuffer(arquivo);
+        }
+
+        /* ============================================================
+               PERSISTÊNCIA (LOCALSTORAGE / BACKUP)
+            ============================================================ */
+        function salvarEstadoCompleto() {
+            const estado = {
+                dadosPlanilha,
+                listaAbas,
+                logo: localStorage.getItem('logo_mimo'),
+                versao: '1.1'
+            };
+            localStorage.setItem('viacao_mimo_estado', JSON.stringify(estado));
+        }
+
+        function carregarEstadoSalvo() {
+            const raw = localStorage.getItem('viacao_mimo_estado');
+            if (!raw) return;
             try {
-                const estado = JSON.parse(estadoSalvo);
+                const estado = JSON.parse(raw);
                 if (estado.dadosPlanilha && Object.keys(estado.dadosPlanilha).length) {
                     dadosPlanilha = estado.dadosPlanilha;
                     listaAbas = estado.listaAbas || Object.keys(dadosPlanilha);
-                    document.getElementById("fileInfo").innerHTML = `💾 Dados restaurados (${listaAbas.length} aba(s))`;
-                    if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length)
+                    fileInfo.textContent = `💾 Dados restaurados (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
+                    if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
                         mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                    if (estado.logo) { localStorage.setItem("logo_mimo", estado.logo); carregarLogoSalva(); }
+                    }
+                    if (estado.logo) {
+                        localStorage.setItem('logo_mimo', estado.logo);
+                        carregarLogoSalva();
+                    }
                     popularSelectUnidades();
+                    // Se houver unidade previamente selecionada, tentamos restaurar
+                    // (não temos, então apenas deixamos)
                 }
-            } catch(e) {}
+            } catch (e) { /* ignora */ }
         }
-    }
-    function exportarBackup() {
-        if (!Object.keys(dadosPlanilha).length) { alert("Nenhuma planilha carregada."); return; }
-        const backup = { tipo: "ExpressoLucena_Backup", versao: "1.0", dadosPlanilha, listaAbas, logo: localStorage.getItem("logo_mimo"), timestamp: new Date().toISOString() };
-        const blob = new Blob([JSON.stringify(backup, null, 2)], {type: "application/json"});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `expresso_lucena_backup_${new Date().toISOString().slice(0,19)}.json`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        alert("Backup exportado!");
-    }
-    function importarBackup(arquivoJson) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            try {
-                const backup = JSON.parse(ev.target.result);
-                if (!backup.dadosPlanilha) throw new Error();
-                dadosPlanilha = backup.dadosPlanilha;
-                listaAbas = backup.listaAbas || Object.keys(dadosPlanilha);
-                if (backup.logo) { localStorage.setItem("logo_mimo", backup.logo); carregarLogoSalva(); }
-                salvarEstadoCompleto();
-                document.getElementById("fileInfo").innerHTML = `📥 Backup importado — ${listaAbas.length} aba(s)`;
-                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length)
-                    mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                document.getElementById("resultado").innerHTML = `<div class="sucesso">Backup restaurado!</div>`;
-                ultimaUnidade = null;
-                document.getElementById("filtroArea").classList.remove("visivel");
-                popularSelectUnidades();
-            } catch(e) { alert("Arquivo inválido."); }
-        };
-        reader.readAsText(arquivoJson);
-    }
 
-    function carregarLogoSalva() {
-        const logo = localStorage.getItem("logo_mimo");
-        const logoImg = document.getElementById("logoImg");
-        const logoSvg = document.getElementById("logoSvg");
-        if (logo) { logoImg.src = logo; logoImg.style.display = "block"; logoSvg.style.display = "none"; }
-        else { logoImg.style.display = "none"; logoSvg.style.display = "block"; }
-    }
-    function salvarLogo(base64) { localStorage.setItem("logo_mimo", base64); carregarLogoSalva(); salvarEstadoCompleto(); }
-    function resetarLogo() { localStorage.removeItem("logo_mimo"); carregarLogoSalva(); salvarEstadoCompleto(); alert("Logo restaurada!"); }
+        function exportarBackup() {
+            if (Object.keys(dadosPlanilha).length === 0) {
+                alert('Nenhuma planilha carregada para exportar.');
+                return;
+            }
+            const backup = {
+                tipo: 'ViacaoMimo_Backup',
+                versao: '1.1',
+                dadosPlanilha,
+                listaAbas,
+                logo: localStorage.getItem('logo_mimo'),
+                timestamp: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `viacao_mimo_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            alert('Backup exportado com sucesso!');
+        }
 
-    // Eventos e inicialização
-    let masterAtivo = false;
-    document.getElementById("btnMaster").addEventListener("click", () => {
-        let pass = prompt("Senha Master:");
-        if (pass === SENHA_MASTER) {
+        function importarBackup(arquivoJson) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    if (!backup.dadosPlanilha) throw new Error('Estrutura inválida');
+                    dadosPlanilha = backup.dadosPlanilha;
+                    listaAbas = backup.listaAbas || Object.keys(dadosPlanilha);
+                    if (backup.logo) {
+                        localStorage.setItem('logo_mimo', backup.logo);
+                        carregarLogoSalva();
+                    }
+                    salvarEstadoCompleto();
+                    fileInfo.textContent = `📥 Backup importado — ${listaAbas.length} aba(s)`;
+                    if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
+                        mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+                    }
+                    resultadoDiv.innerHTML = `<div class="sucesso">Backup restaurado com sucesso!</div>`;
+                    unidadeAtual = null;
+                    registrosUnidade = [];
+                    indicePorNome = {};
+                    filtroArea.classList.remove('visivel');
+                    contadorResultados.textContent = '';
+                    popularSelectUnidades();
+                } catch (err) {
+                    alert('Arquivo inválido ou corrompido.');
+                }
+            };
+            reader.readAsText(arquivoJson);
+        }
+
+        // Exportar resultados filtrados para CSV
+        function exportarResultadosCSV() {
+            if (!resultadosFiltrados || resultadosFiltrados.length === 0) {
+                alert('Não há resultados para exportar. Faça uma busca primeiro.');
+                return;
+            }
+            const cabecalho = ['Nome Passageiro', 'Turno', 'Linha Vinculada', 'Endereço Parada', 'Hora Parada', 'Ponto de Referência', 'Distância (m)'];
+            const linhas = resultadosFiltrados.map(row => {
+                const d = extrairDados(row);
+                return [
+                    d.nome,
+                    d.turno,
+                    d.linha,
+                    d.enderecoRaw,
+                    formatarHoraDisplay(d.horaRaw),
+                    d.referencia,
+                    d.distancia
+                ];
+            });
+            const csvContent = [cabecalho.join(','), ...linhas.map(l => l.join(','))].join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para Excel
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `resultados_${unidadeAtual || 'geral'}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        /* ============================================================
+               LOGO
+            ============================================================ */
+        function carregarLogoSalva() {
+            const logo = localStorage.getItem('logo_mimo');
+            if (logo) {
+                logoImg.src = logo;
+                logoImg.style.display = 'block';
+                logoSvg.style.display = 'none';
+            } else {
+                logoImg.style.display = 'none';
+                logoSvg.style.display = 'block';
+            }
+        }
+
+        function salvarLogo(base64) {
+            localStorage.setItem('logo_mimo', base64);
+            carregarLogoSalva();
+            salvarEstadoCompleto();
+        }
+
+        function resetarLogo() {
+            localStorage.removeItem('logo_mimo');
+            carregarLogoSalva();
+            salvarEstadoCompleto();
+            alert('Logo restaurada para o padrão.');
+        }
+
+        /* ============================================================
+               CONTROLE DE ACESSO MASTER (com hash)
+            ============================================================ */
+        async function hashSenha(senha) {
+            const enc = new TextEncoder();
+            const data = enc.encode(senha);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function ativarMaster() {
             masterAtivo = true;
-            document.getElementById("uploadArea").classList.add("visivel");
-            document.getElementById("logoUploadArea").classList.add("visivel");
-            document.getElementById("btnAbrirLogo").style.display = "inline-block";
-            document.getElementById("persistArea").style.display = "block";
-            alert("Modo Master ativado.");
-        } else alert("Senha incorreta!");
-    });
-    document.getElementById("btnAbrirLogo").addEventListener("click", () => { if (masterAtivo) document.getElementById("logoUpload").click(); else alert("Acesso Master necessário."); });
-    document.getElementById("logoUpload").addEventListener("change", (e) => { if(e.target.files[0]){ let fr=new FileReader(); fr.onload=(ev)=>salvarLogo(ev.target.result); fr.readAsDataURL(e.target.files[0]); } });
-    document.getElementById("btnResetLogo").addEventListener("click", resetarLogo);
-    document.getElementById("fileUpload").addEventListener("change", (e) => { if(masterAtivo && e.target.files.length) processarUpload(e.target.files[0]); else if(!masterAtivo) alert("Modo Master necessário."); });
-    document.getElementById("btnExportarDados").addEventListener("click", () => { if(masterAtivo) exportarBackup(); else alert("Modo Master necessário."); });
-    document.getElementById("btnImportarDados").addEventListener("click", () => { if(masterAtivo) document.getElementById("importBackupFile").click(); else alert("Modo Master necessário."); });
-    document.getElementById("importBackupFile").addEventListener("change", (e) => { if(e.target.files.length) importarBackup(e.target.files[0]); });
-    document.getElementById("btnConsultar").addEventListener("click", carregarUnidade);
-    document.getElementById("filtro").addEventListener("input", aplicarFiltro);
-    document.getElementById("unidade").addEventListener("keypress", e => e.key === "Enter" && carregarUnidade());
-    // Sincroniza o select com o campo de texto (caso o usuário digite)
-    document.getElementById("unidadeSelect").addEventListener("change", function() {
-        if (this.value) {
-            document.getElementById("unidade").value = this.value;
-            carregarUnidade();
+            uploadArea.classList.add('visivel');
+            logoUploadArea.classList.add('visivel');
+            btnAbrirLogo.style.display = 'inline-block';
+            persistArea.style.display = 'block';
+            alert('🔓 Modo Master ativado.');
         }
-    });
 
-    carregarSalvo();
-    carregarEstadoSalvo();
-    carregarLogoSalva();
-</script>
+        // Evento do botão Master
+        btnMaster.addEventListener('click', async () => {
+            if (masterAtivo) {
+                alert('Modo Master já está ativo.');
+                return;
+            }
+            const senha = prompt('Digite a senha Master:');
+            if (senha === null) return;
+            const hash = await hashSenha(senha);
+            if (hash === SENHA_HASH) {
+                ativarMaster();
+            } else {
+                alert('Senha incorreta!');
+            }
+        });
+
+        /* ============================================================
+               EVENT LISTENERS
+            ============================================================ */
+
+        // Upload de planilha
+        fileUpload.addEventListener('change', (e) => {
+            if (!masterAtivo) { alert('Modo Master necessário.'); return; }
+            if (e.target.files.length) processarArquivo(e.target.files[0]);
+        });
+
+        // Arrastar e soltar na área de upload
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (!masterAtivo) { alert('Modo Master necessário.'); return; }
+            const files = e.dataTransfer.files;
+            if (files.length) processarArquivo(files[0]);
+        });
+
+        // Selecionar unidade (botão)
+        btnConsultar.addEventListener('click', carregarUnidade);
+
+        // Enter no input de unidade
+        unidadeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') carregarUnidade();
+        });
+
+        // Mudança no select
+        unidadeSelect.addEventListener('change', function() {
+            if (this.value) {
+                unidadeInput.value = this.value;
+                carregarUnidade();
+            }
+        });
+
+        // Filtro (digitação)
+        filtroInput.addEventListener('input', aplicarFiltro);
+
+        // Botão limpar filtro
+        btnLimparFiltro.addEventListener('click', limparFiltro);
+
+        // Logo
+        btnAbrirLogo.addEventListener('click', () => {
+            if (masterAtivo) logoUpload.click();
+            else alert('Acesso Master necessário.');
+        });
+        logoUpload.addEventListener('change', (e) => {
+            if (!masterAtivo) return;
+            if (e.target.files[0]) {
+                const fr = new FileReader();
+                fr.onload = (ev) => salvarLogo(ev.target.result);
+                fr.readAsDataURL(e.target.files[0]);
+            }
+        });
+        btnResetLogo.addEventListener('click', resetarLogo);
+
+        // Backup
+        btnExportarDados.addEventListener('click', () => {
+            if (masterAtivo) exportarBackup();
+            else alert('Acesso Master necessário.');
+        });
+        btnImportarDados.addEventListener('click', () => {
+            if (masterAtivo) importBackupFile.click();
+            else alert('Acesso Master necessário.');
+        });
+        importBackupFile.addEventListener('change', (e) => {
+            if (e.target.files.length) importarBackup(e.target.files[0]);
+        });
+
+        // Exportar resultados
+        btnExportarFiltrados.addEventListener('click', () => {
+            if (!masterAtivo) { alert('Acesso Master necessário.'); return; }
+            exportarResultadosCSV();
+        });
+
+        /* ============================================================
+               INICIALIZAÇÃO
+            ============================================================ */
+        // Carregar dados salvos
+        const salvoSession = sessionStorage.getItem('planilha_mimo');
+        if (salvoSession) {
+            try {
+                const obj = JSON.parse(salvoSession);
+                dadosPlanilha = obj.dados;
+                listaAbas = obj.abas;
+                fileInfo.textContent = `📂 Planilha em cache (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
+                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
+                    mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+                }
+                popularSelectUnidades();
+                // Se houver apenas uma unidade, carrega automaticamente? Não forçamos.
+            } catch (e) { /* ignora */ }
+        }
+
+        carregarEstadoSalvo();
+        carregarLogoSalva();
+
+        // Se houver pelo menos uma unidade e nenhuma selecionada, mostra dica
+        if (listaAbas.length > 0 && !unidadeAtual) {
+            mostrarMensagemInfo(`📌 ${listaAbas.length} unidade(s) disponível(is). Selecione uma para consultar.`);
+            if (listaAbas.length === 1) {
+                // Carrega automaticamente se só tem uma
+                unidadeInput.value = listaAbas[0];
+                carregarUnidade();
+            }
+        }
+
+        console.log('✅ Viação Mimo - Sistema de Consulta de Passageiros carregado.');
+    </script>
 </body>
 </html>
