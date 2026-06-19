@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Viação Mimo - Consulta de Passageiros</title>
-    <!-- SheetJS via CDN (com fallback) -->
+    <title>MIMO - Consulta de Passageiros</title>
+    <!-- SheetJS via CDN -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js">
     </script>
     <style>
-        /* ===== RESET E BASE ===== */
+        /* ===== RESET ===== */
         * {
             margin: 0;
             padding: 0;
@@ -34,12 +34,12 @@
             margin-bottom: 12px;
         }
         .logo-svg {
-            max-width: 340px;
+            max-width: 380px;
             width: 100%;
             height: auto;
         }
         .logo-img {
-            max-width: 340px;
+            max-width: 380px;
             max-height: 100px;
             object-fit: contain;
         }
@@ -48,6 +48,7 @@
             letter-spacing: 2.8px;
             color: #1b6b5e;
             margin-top: 4px;
+            font-weight: 500;
         }
 
         /* ===== TÍTULOS ===== */
@@ -299,6 +300,9 @@
             .container {
                 padding: 16px;
             }
+            .logo-svg {
+                max-width: 280px;
+            }
         }
     </style>
 </head>
@@ -307,23 +311,28 @@
     <div class="container">
         <!-- CABEÇALHO -->
         <div class="logo-area">
-            <svg id="logoSvg" class="logo-svg" viewBox="0 0 420 100">
+            <!-- SVG com identidade MIMO CONSORCIO DE SEGURANÇA E DESTINO -->
+            <svg id="logoSvg" class="logo-svg" viewBox="0 0 500 100" preserveAspectRatio="xMidYMid meet">
                 <defs>
                     <linearGradient id="gradMimo" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stop-color="#0e3d3a" />
                         <stop offset="100%" stop-color="#1e7e6e" />
                     </linearGradient>
                 </defs>
-                <rect x="12" y="32" width="48" height="36" rx="7" fill="#1e7e6e" />
-                <rect x="17" y="26" width="38" height="9" rx="3" fill="#279b86" />
-                <circle cx="26" cy="70" r="5.5" fill="#1f4d44" />
-                <circle cx="46" cy="70" r="5.5" fill="#1f4d44" />
-                <rect x="25" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85" />
-                <text x="78" y="54" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="30" fill="url(#gradMimo)" letter-spacing="1.5">VIAÇÃO MIMO</text>
-                <line x1="74" y1="66" x2="370" y2="66" stroke="#1e7e6e" stroke-width="2.2" />
-                <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="3.5">CONSULTA · PASSAGEIROS</text>
+                <!-- Ônibus estilizado -->
+                <rect x="10" y="32" width="48" height="36" rx="7" fill="#1e7e6e" />
+                <rect x="15" y="26" width="38" height="9" rx="3" fill="#279b86" />
+                <circle cx="24" cy="70" r="5.5" fill="#1f4d44" />
+                <circle cx="44" cy="70" r="5.5" fill="#1f4d44" />
+                <rect x="23" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85" />
+                <!-- Texto MIMO -->
+                <text x="78" y="56" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="32" fill="url(#gradMimo)" letter-spacing="1.5">MIMO</text>
+                <!-- Linha decorativa -->
+                <line x1="74" y1="66" x2="400" y2="66" stroke="#1e7e6e" stroke-width="2.2" />
+                <!-- Subtítulo -->
+                <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="2.8">CONSORCIO DE SEGURANÇA E DESTINO</text>
             </svg>
-            <img id="logoImg" class="logo-img" style="display:none;" alt="Logo Viação Mimo" />
+            <img id="logoImg" class="logo-img" style="display:none;" alt="Logo MIMO" />
             <div class="logo-sub">conexão segura e eficiência em transporte</div>
         </div>
 
@@ -396,12 +405,9 @@
         /* ============================================================
                CONFIGURAÇÕES
             ============================================================ */
-        // A senha é armazenada como hash SHA-256 (não fica em texto puro)
-        // A senha real é "Mimo@#2026" – este é o hash dela.
+        // A senha é armazenada como hash SHA-256 (não em texto puro)
         const SENHA_HASH = '8c6a2c6b7e7e4c6f8e9a7c8d9f0e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f';
-        // Para gerar o hash, usei um gerador online. Nunca armazene senhas em texto puro no front-end.
 
-        // Mapeamento de colunas (sinônimos)
         const fieldMapping = {
             nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
             turno: { possible: ["Turno", "TURNO"] },
@@ -415,11 +421,11 @@
         /* ============================================================
                ESTADO GLOBAL
             ============================================================ */
-        let dadosPlanilha = {}; // { nomeAba: [rows] }
+        let dadosPlanilha = {};
         let listaAbas = [];
         let unidadeAtual = null;
         let registrosUnidade = [];
-        let indicePorNome = {}; // { nomeMinusculo: [índices] } para busca rápida
+        let indicePorNome = {};
         let masterAtivo = false;
         let resultadosFiltrados = [];
 
@@ -501,7 +507,6 @@
             return String(valor);
         }
 
-        // Cria um índice para busca rápida por nome
         function construirIndice(registros) {
             const idx = {};
             registros.forEach((row, i) => {
@@ -515,16 +520,12 @@
             return idx;
         }
 
-        // Busca por substring (case-insensitive) usando índice
         function buscarPorNome(registros, termo) {
             if (!termo.trim()) return registros;
             const lower = termo.toLowerCase().trim();
-            // Se o termo for exato, usa índice
             if (indicePorNome[lower]) {
                 return indicePorNome[lower].map(i => registros[i]);
             }
-            // Caso contrário, faz busca linear (mas só nos que começam com o termo? Melhor manter linear para substring)
-            // Para performance, podemos filtrar apenas se o termo for curto.
             return registros.filter(row => {
                 const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
                 return nome !== '—' && String(nome).toLowerCase().includes(lower);
@@ -612,7 +613,6 @@
                 unidadeSelect.appendChild(opt);
             });
             unidadeSelect.style.display = 'block';
-            // Sincroniza valor
             if (unidadeAtual && listaAbas.includes(unidadeAtual)) {
                 unidadeSelect.value = unidadeAtual;
                 unidadeInput.value = unidadeAtual;
@@ -636,7 +636,6 @@
                 return;
             }
 
-            // Encontra a aba (case-insensitive)
             const normalizado = nome.trim().toLowerCase();
             const abaEncontrada = listaAbas.find(aba => aba.trim().toLowerCase() === normalizado);
             if (!abaEncontrada) {
@@ -653,10 +652,8 @@
             filtroInput.value = '';
             contadorResultados.textContent = `${registrosUnidade.length} registros`;
             mostrarMensagemInfo(`✅ Unidade "${abaEncontrada}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.`);
-            // Sincroniza campos
             unidadeInput.value = abaEncontrada;
             if (unidadeSelect.style.display !== 'none') unidadeSelect.value = abaEncontrada;
-            // Mostra colunas se ainda não mostrou
             if (registrosUnidade.length) mostrarColunas(registrosUnidade[0], abaEncontrada);
         }
 
@@ -667,7 +664,6 @@
                 return;
             }
             if (!termo) {
-                // Mostra todos os registros da unidade
                 exibirResultados(registrosUnidade, unidadeAtual, '');
                 contadorResultados.textContent = `${registrosUnidade.length} registros`;
                 return;
@@ -706,15 +702,12 @@
                     }
                     dadosPlanilha = novoDados;
                     listaAbas = abas;
-                    // Mostra colunas da primeira aba
                     if (abas.length && dadosPlanilha[abas[0]].length) {
                         mostrarColunas(dadosPlanilha[abas[0]][0], abas[0]);
                     }
                     fileInfo.textContent = `✅ ${arquivo.name} — Abas: ${abas.join(', ')} (${abas.length} unidade${abas.length > 1 ? 's' : ''})`;
                     uploadStatus.textContent = '✅ Planilha carregada com sucesso!';
-                    // Persistir em sessionStorage
                     sessionStorage.setItem('planilha_mimo', JSON.stringify({ dados: dadosPlanilha, abas: listaAbas }));
-                    // Resetar estado
                     unidadeAtual = null;
                     registrosUnidade = [];
                     indicePorNome = {};
@@ -731,7 +724,7 @@
         }
 
         /* ============================================================
-               PERSISTÊNCIA (LOCALSTORAGE / BACKUP)
+               PERSISTÊNCIA
             ============================================================ */
         function salvarEstadoCompleto() {
             const estado = {
@@ -760,8 +753,6 @@
                         carregarLogoSalva();
                     }
                     popularSelectUnidades();
-                    // Se houver unidade previamente selecionada, tentamos restaurar
-                    // (não temos, então apenas deixamos)
                 }
             } catch (e) { /* ignora */ }
         }
@@ -772,7 +763,7 @@
                 return;
             }
             const backup = {
-                tipo: 'ViacaoMimo_Backup',
+                tipo: 'MIMO_Backup',
                 versao: '1.1',
                 dadosPlanilha,
                 listaAbas,
@@ -782,7 +773,7 @@
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `viacao_mimo_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            link.download = `mimo_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
             link.click();
             URL.revokeObjectURL(link.href);
             alert('Backup exportado com sucesso!');
@@ -819,7 +810,6 @@
             reader.readAsText(arquivoJson);
         }
 
-        // Exportar resultados filtrados para CSV
         function exportarResultadosCSV() {
             if (!resultadosFiltrados || resultadosFiltrados.length === 0) {
                 alert('Não há resultados para exportar. Faça uma busca primeiro.');
@@ -839,7 +829,7 @@
                 ];
             });
             const csvContent = [cabecalho.join(','), ...linhas.map(l => l.join(','))].join('\n');
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para Excel
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `resultados_${unidadeAtual || 'geral'}_${new Date().toISOString().slice(0,10)}.csv`;
@@ -876,7 +866,7 @@
         }
 
         /* ============================================================
-               CONTROLE DE ACESSO MASTER (com hash)
+               CONTROLE DE ACESSO MASTER
             ============================================================ */
         async function hashSenha(senha) {
             const enc = new TextEncoder();
@@ -895,7 +885,6 @@
             alert('🔓 Modo Master ativado.');
         }
 
-        // Evento do botão Master
         btnMaster.addEventListener('click', async () => {
             if (masterAtivo) {
                 alert('Modo Master já está ativo.');
@@ -914,14 +903,11 @@
         /* ============================================================
                EVENT LISTENERS
             ============================================================ */
-
-        // Upload de planilha
         fileUpload.addEventListener('change', (e) => {
             if (!masterAtivo) { alert('Modo Master necessário.'); return; }
             if (e.target.files.length) processarArquivo(e.target.files[0]);
         });
 
-        // Arrastar e soltar na área de upload
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -937,15 +923,10 @@
             if (files.length) processarArquivo(files[0]);
         });
 
-        // Selecionar unidade (botão)
         btnConsultar.addEventListener('click', carregarUnidade);
-
-        // Enter no input de unidade
         unidadeInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') carregarUnidade();
         });
-
-        // Mudança no select
         unidadeSelect.addEventListener('change', function() {
             if (this.value) {
                 unidadeInput.value = this.value;
@@ -953,13 +934,9 @@
             }
         });
 
-        // Filtro (digitação)
         filtroInput.addEventListener('input', aplicarFiltro);
-
-        // Botão limpar filtro
         btnLimparFiltro.addEventListener('click', limparFiltro);
 
-        // Logo
         btnAbrirLogo.addEventListener('click', () => {
             if (masterAtivo) logoUpload.click();
             else alert('Acesso Master necessário.');
@@ -974,7 +951,6 @@
         });
         btnResetLogo.addEventListener('click', resetarLogo);
 
-        // Backup
         btnExportarDados.addEventListener('click', () => {
             if (masterAtivo) exportarBackup();
             else alert('Acesso Master necessário.');
@@ -986,8 +962,6 @@
         importBackupFile.addEventListener('change', (e) => {
             if (e.target.files.length) importarBackup(e.target.files[0]);
         });
-
-        // Exportar resultados
         btnExportarFiltrados.addEventListener('click', () => {
             if (!masterAtivo) { alert('Acesso Master necessário.'); return; }
             exportarResultadosCSV();
@@ -996,7 +970,6 @@
         /* ============================================================
                INICIALIZAÇÃO
             ============================================================ */
-        // Carregar dados salvos
         const salvoSession = sessionStorage.getItem('planilha_mimo');
         if (salvoSession) {
             try {
@@ -1008,24 +981,21 @@
                     mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
                 }
                 popularSelectUnidades();
-                // Se houver apenas uma unidade, carrega automaticamente? Não forçamos.
             } catch (e) { /* ignora */ }
         }
 
         carregarEstadoSalvo();
         carregarLogoSalva();
 
-        // Se houver pelo menos uma unidade e nenhuma selecionada, mostra dica
         if (listaAbas.length > 0 && !unidadeAtual) {
             mostrarMensagemInfo(`📌 ${listaAbas.length} unidade(s) disponível(is). Selecione uma para consultar.`);
             if (listaAbas.length === 1) {
-                // Carrega automaticamente se só tem uma
                 unidadeInput.value = listaAbas[0];
                 carregarUnidade();
             }
         }
 
-        console.log('✅ Viação Mimo - Sistema de Consulta de Passageiros carregado.');
+        console.log('✅ MIMO - Sistema de Consulta de Passageiros carregado.');
     </script>
 </body>
 </html>
