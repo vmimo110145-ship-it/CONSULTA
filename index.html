@@ -4,998 +4,500 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MIMO - Consulta de Passageiros</title>
-    <!-- SheetJS via CDN -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js">
     </script>
     <style>
-        /* ===== RESET ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #eef2f7;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 920px;
-            margin: auto;
-            background: white;
-            border-radius: 32px;
-            padding: 28px 24px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
-        }
-
-        /* ===== LOGO ===== */
-        .logo-area {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .logo-svg {
-            max-width: 380px;
-            width: 100%;
-            height: auto;
-        }
-        .logo-img {
-            max-width: 380px;
-            max-height: 100px;
-            object-fit: contain;
-        }
-        .logo-sub {
-            font-size: 0.7rem;
-            letter-spacing: 2.8px;
-            color: #1b6b5e;
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* ===== TÍTULOS ===== */
-        h2 {
-            text-align: center;
-            color: #0e3d3a;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-        .sub {
-            text-align: center;
-            color: #2c6e5c;
-            margin-bottom: 1.8rem;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #d4e2de;
-            display: inline-block;
-            padding-bottom: 6px;
-            width: auto;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* ===== ÁREAS DE UPLOAD ===== */
-        .upload-area,
-        .logo-upload-area {
-            border: 2px dashed #1e7e6e;
-            border-radius: 24px;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 20px;
-            background: #f9fefc;
-            display: none;
-            transition: 0.2s;
-        }
-        .upload-area.visivel,
-        .logo-upload-area.visivel {
-            display: block;
-        }
-        .upload-area.dragover {
-            background: #e0f2ea;
-            border-color: #0f5f52;
-        }
-
-        .file-info {
-            background: #e0f0ec;
-            border-radius: 40px;
-            padding: 10px 18px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            text-align: center;
-            color: #0c4e43;
-        }
-        .colunas-info {
-            font-size: 0.8rem;
-            background: #f4f9f7;
-            padding: 12px 16px;
-            border-radius: 16px;
-            margin: 12px 0 16px;
-            word-break: break-word;
-            display: none;
-        }
-
-        /* ===== CONTROLES ===== */
-        .input-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .input-group select,
-        .input-group input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 1px solid #cbdcd8;
-            border-radius: 44px;
-            font-size: 1rem;
-            background: white;
-            min-width: 160px;
-        }
-        .input-group button {
-            background: #1e7e6e;
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 44px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .input-group button:hover {
-            background: #0f5f52;
-        }
-
-        .filtro-area {
-            margin: 16px 0 12px;
-            display: none;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filtro-area.visivel {
-            display: flex;
-        }
-        .filtro-area input {
-            flex: 2;
-            background: #fefdf7;
-            border-radius: 48px;
-            padding: 12px 20px;
-            border: 1px solid #cbdcd8;
-            font-size: 1rem;
-            min-width: 180px;
-        }
-        .filtro-area .badge-busca {
-            background: #eef5f2;
-            border-radius: 30px;
-            padding: 6px 14px;
-            font-size: 0.75rem;
-            color: #1e7e6e;
-            white-space: nowrap;
-        }
-        .filtro-area .btn-limpar {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 44px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .filtro-area .btn-limpar:hover {
-            background: #495057;
-        }
-
-        /* ===== RESULTADOS ===== */
-        #resultado {
-            margin-top: 16px;
-        }
-        .card {
-            background: #ffffff;
-            border-left: 6px solid #1e7e6e;
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            transition: 0.1s;
-        }
-        .card p {
-            margin: 8px 0;
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .card strong {
-            width: 160px;
-            color: #1a5a4f;
-            font-weight: 600;
-        }
-        .endereco-link {
-            color: #1e7e6e;
-            text-decoration: none;
-            border-bottom: 1px dashed #1e7e6e;
-            cursor: pointer;
-        }
-        .endereco-link:hover {
-            border-bottom-style: solid;
-        }
-
-        .erro {
-            background: #ffe9e9;
-            color: #c0392b;
-            padding: 16px;
-            border-radius: 20px;
-            text-align: center;
-        }
-        .sucesso {
-            background: #e0f2ea;
-            color: #1c6b5a;
-            padding: 14px;
-            border-radius: 20px;
-            text-align: center;
-        }
-        .info {
-            background: #eef2f7;
-            color: #1c5d4e;
-            padding: 14px;
-            border-radius: 20px;
-            text-align: center;
-        }
-
-        /* ===== BOTÕES MASTER ===== */
-        .master-btn {
-            margin-top: 28px;
-            padding-top: 20px;
-            border-top: 1px solid #d4e2de;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .btn-master {
-            background: #5d6e6a;
-        }
-        .btn-logo {
-            background: #2c7a5e;
-        }
-        .btn-export {
-            background: #2c6e5c;
-        }
-
-        .acao-master-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 16px;
-            justify-content: center;
-        }
-
-        /* ===== LOADING ===== */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1e7e6e;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 10px auto;
-        }
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* ===== RESPONSIVO ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #eef2f7; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; padding: 20px; }
+        .container { max-width: 920px; margin: auto; background: white; border-radius: 32px; padding: 28px 24px; box-shadow: 0 12px 30px rgba(0,0,0,0.07); }
+        .logo-area { text-align: center; margin-bottom: 12px; }
+        .logo-svg { max-width: 380px; width: 100%; height: auto; }
+        .logo-img { max-width: 380px; max-height: 100px; object-fit: contain; }
+        .logo-sub { font-size: 0.7rem; letter-spacing: 2.8px; color: #1b6b5e; margin-top: 4px; font-weight: 500; }
+        h2 { text-align: center; color: #0e3d3a; font-weight: 600; margin-top: 8px; }
+        .sub { text-align: center; color: #2c6e5c; margin-bottom: 1.8rem; font-size: 0.9rem; border-bottom: 1px solid #d4e2de; display: inline-block; padding-bottom: 6px; margin-left: auto; margin-right: auto; }
+        .upload-area, .logo-upload-area { border: 2px dashed #1e7e6e; border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 20px; background: #f9fefc; display: none; transition: 0.2s; }
+        .upload-area.visivel, .logo-upload-area.visivel { display: block; }
+        .upload-area.dragover { background: #e0f2ea; border-color: #0f5f52; }
+        .file-info { background: #e0f0ec; border-radius: 40px; padding: 10px 18px; margin-bottom: 20px; font-size: 0.95rem; text-align: center; color: #0c4e43; }
+        .colunas-info { font-size: 0.8rem; background: #f4f9f7; padding: 12px 16px; border-radius: 16px; margin: 12px 0 16px; word-break: break-word; display: none; }
+        .input-group { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+        .input-group select, .input-group input { flex: 1; padding: 12px 18px; border: 1px solid #cbdcd8; border-radius: 44px; font-size: 1rem; background: white; min-width: 160px; }
+        .input-group button { background: #1e7e6e; color: white; border: none; padding: 12px 28px; border-radius: 44px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .input-group button:hover { background: #0f5f52; }
+        .filtro-area { margin: 16px 0 12px; display: none; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .filtro-area.visivel { display: flex; }
+        .filtro-area input { flex: 2; background: #fefdf7; border-radius: 48px; padding: 12px 20px; border: 1px solid #cbdcd8; font-size: 1rem; min-width: 180px; }
+        .filtro-area .badge-busca { background: #eef5f2; border-radius: 30px; padding: 6px 14px; font-size: 0.75rem; color: #1e7e6e; white-space: nowrap; }
+        .filtro-area .btn-limpar { background: #6c757d; color: white; border: none; padding: 8px 18px; border-radius: 44px; cursor: pointer; font-weight: 500; }
+        .filtro-area .btn-limpar:hover { background: #495057; }
+        #resultado { margin-top: 16px; }
+        .card { background: #ffffff; border-left: 6px solid #1e7e6e; border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card p { margin: 8px 0; display: flex; flex-wrap: wrap; }
+        .card strong { width: 160px; color: #1a5a4f; font-weight: 600; }
+        .endereco-link { color: #1e7e6e; text-decoration: none; border-bottom: 1px dashed #1e7e6e; cursor: pointer; }
+        .endereco-link:hover { border-bottom-style: solid; }
+        .erro { background: #ffe9e9; color: #c0392b; padding: 16px; border-radius: 20px; text-align: center; }
+        .sucesso { background: #e0f2ea; color: #1c6b5a; padding: 14px; border-radius: 20px; text-align: center; }
+        .info { background: #eef2f7; color: #1c5d4e; padding: 14px; border-radius: 20px; text-align: center; }
+        .master-btn { margin-top: 28px; padding-top: 20px; border-top: 1px solid #d4e2de; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .btn-master { background: #5d6e6a; }
+        .btn-logo { background: #2c7a5e; }
+        .btn-export { background: #2c6e5c; }
+        .acao-master-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; justify-content: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #1e7e6e; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         @media (max-width: 640px) {
-            .card strong {
-                width: 100%;
-            }
-            .input-group select,
-            .input-group input {
-                min-width: 100%;
-            }
-            .filtro-area input {
-                min-width: 100%;
-            }
-            .container {
-                padding: 16px;
-            }
-            .logo-svg {
-                max-width: 280px;
-            }
+            .card strong { width: 100%; }
+            .input-group select, .input-group input { min-width: 100%; }
+            .filtro-area input { min-width: 100%; }
+            .container { padding: 16px; }
+            .logo-svg { max-width: 280px; }
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <!-- CABEÇALHO -->
-        <div class="logo-area">
-            <!-- SVG com identidade MIMO CONSORCIO DE SEGURANÇA E DESTINO -->
-            <svg id="logoSvg" class="logo-svg" viewBox="0 0 500 100" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                    <linearGradient id="gradMimo" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#0e3d3a" />
-                        <stop offset="100%" stop-color="#1e7e6e" />
-                    </linearGradient>
-                </defs>
-                <!-- Ônibus estilizado -->
-                <rect x="10" y="32" width="48" height="36" rx="7" fill="#1e7e6e" />
-                <rect x="15" y="26" width="38" height="9" rx="3" fill="#279b86" />
-                <circle cx="24" cy="70" r="5.5" fill="#1f4d44" />
-                <circle cx="44" cy="70" r="5.5" fill="#1f4d44" />
-                <rect x="23" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85" />
-                <!-- Texto MIMO -->
-                <text x="78" y="56" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="32" fill="url(#gradMimo)" letter-spacing="1.5">MIMO</text>
-                <!-- Linha decorativa -->
-                <line x1="74" y1="66" x2="400" y2="66" stroke="#1e7e6e" stroke-width="2.2" />
-                <!-- Subtítulo -->
-                <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="2.8">CONSORCIO DE SEGURANÇA E DESTINO</text>
-            </svg>
-            <img id="logoImg" class="logo-img" style="display:none;" alt="Logo MIMO" />
-            <div class="logo-sub">conexão segura e eficiência em transporte</div>
-        </div>
-
-        <h2>Consulta de Passageiros</h2>
-        <div class="sub">Selecione a unidade (aba) e busque pelo NOME DO PASSAGEIRO</div>
-
-        <!-- ÁREA DE UPLOAD (MASTER) -->
-        <div id="uploadArea" class="upload-area">
-            <label style="cursor:pointer; font-weight:500;">
-                📂 Carregar planilha (Excel/CSV)
-                <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv, .ods" style="display:block; margin:12px auto 0; width:auto;" />
-            </label>
-            <small style="color:#5f7c74;">Arraste ou clique — suporta múltiplas abas (unidades)</small>
-            <div id="uploadStatus" style="margin-top:8px; font-size:0.9rem;"></div>
-        </div>
-
-        <!-- ÁREA DE LOGO (MASTER) -->
-        <div id="logoUploadArea" class="logo-upload-area">
-            <label>🖼️ Personalizar logo (PNG, JPG, GIF)
-                <input type="file" id="logoUpload" accept="image/*" />
-            </label>
-            <button id="btnResetLogo" style="background:#6c757d; margin-top:10px; padding:6px 16px; border:none; border-radius:44px; color:#fff; cursor:pointer;">Restaurar Logo Padrão</button>
-        </div>
-
-        <!-- INFORMAÇÕES DA PLANILHA -->
-        <div id="fileInfo" class="file-info"></div>
-        <div id="colunasInfo" class="colunas-info"></div>
-
-        <!-- SELEÇÃO DE UNIDADE -->
-        <div class="input-group">
-            <div style="flex:2; display:flex; gap:12px; flex-wrap:wrap;">
-                <select id="unidadeSelect" style="display:none;"></select>
-                <input type="text" id="unidadeInput" placeholder="Digite o nome da unidade (aba)" autocomplete="off" style="flex:1;" />
-            </div>
-            <button id="btnConsultar">🔍 Selecionar Unidade</button>
-        </div>
-
-        <!-- FILTRO DE PASSAGEIRO -->
-        <div id="filtroArea" class="filtro-area">
-            <input type="text" id="filtroInput" placeholder="🔎 Digite o NOME DO PASSAGEIRO (ex: GUTEMBERG, MARIA)..." />
-            <span class="badge-busca">✔ Busca na coluna "Nome Passageiro"</span>
-            <button class="btn-limpar" id="btnLimparFiltro">✕ Limpar</button>
-            <span id="contadorResultados" style="margin-left:auto; font-size:0.9rem; color:#1e7e6e;"></span>
-        </div>
-
-        <!-- RESULTADOS -->
-        <div id="resultado"></div>
-
-        <!-- BOTÕES MASTER -->
-        <div class="master-btn">
-            <button class="btn-master" id="btnMaster">🔐 Acesso Master</button>
-            <button class="btn-logo" id="btnAbrirLogo" style="display:none;">🖼️ Trocar Logo</button>
-        </div>
-
-        <!-- ÁREA DE BACKUP (MASTER) -->
-        <div id="persistArea" style="display: none; margin-top: 24px; border-top: 1px solid #d4e2de; padding-top: 20px;">
-            <div class="acao-master-group">
-                <button id="btnExportarDados" class="btn-export">💾 Exportar Dados (Planilha + Logo)</button>
-                <button id="btnImportarDados" class="btn-export">📂 Importar Dados Backup</button>
-                <button id="btnExportarFiltrados" class="btn-export" style="background:#4a7a6b;">📤 Exportar Resultados (CSV)</button>
-                <input type="file" id="importBackupFile" accept=".json" style="display: none;" />
-            </div>
-            <p class="info" style="margin-top: 12px; font-size: 0.8rem;">
-                ✨ Use "Exportar Dados" para baixar um arquivo .json com todos os dados e logo. Em outro dispositivo, importe para restaurar.
-            </p>
-        </div>
+<div class="container">
+    <div class="logo-area">
+        <svg id="logoSvg" class="logo-svg" viewBox="0 0 500 100" preserveAspectRatio="xMidYMid meet">
+            <defs><linearGradient id="gradMimo" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0e3d3a"/><stop offset="100%" stop-color="#1e7e6e"/></linearGradient></defs>
+            <rect x="10" y="32" width="48" height="36" rx="7" fill="#1e7e6e"/>
+            <rect x="15" y="26" width="38" height="9" rx="3" fill="#279b86"/>
+            <circle cx="24" cy="70" r="5.5" fill="#1f4d44"/><circle cx="44" cy="70" r="5.5" fill="#1f4d44"/>
+            <rect x="23" y="44" width="22" height="13" rx="3" fill="#fff" opacity="0.85"/>
+            <text x="78" y="56" font-family="'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="32" fill="url(#gradMimo)" letter-spacing="1.5">MIMO</text>
+            <line x1="74" y1="66" x2="400" y2="66" stroke="#1e7e6e" stroke-width="2.2"/>
+            <text x="78" y="84" font-family="'Segoe UI',Roboto,sans-serif" font-weight="600" font-size="11" fill="#417d6f" letter-spacing="2.8">CONSORCIO DE SEGURANÇA E DESTINO</text>
+        </svg>
+        <img id="logoImg" class="logo-img" style="display:none;" alt="Logo MIMO" />
+        <div class="logo-sub">conexão segura e eficiência em transporte</div>
     </div>
 
-    <script>
-        /* ============================================================
-               CONFIGURAÇÕES
-            ============================================================ */
-        // A senha é armazenada como hash SHA-256 (não em texto puro)
-        const SENHA_HASH = '8c6a2c6b7e7e4c6f8e9a7c8d9f0e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f';
+    <h2>Consulta de Passageiros</h2>
+    <div class="sub">Selecione a unidade (aba) e busque pelo NOME DO PASSAGEIRO</div>
 
-        const fieldMapping = {
-            nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
-            turno: { possible: ["Turno", "TURNO"] },
-            linha: { possible: ["Linha Vinculada", "LINHA VINCULADA", "Linha"] },
-            endereco: { possible: ["Endereço Parada", "ENDEREÇO PARADA", "Endereco Parada"] },
-            hora: { possible: ["Hora Parada", "HORA PARADA", "Hora"] },
-            referencia: { possible: ["Ponto de Referencia", "PONTO DE REFERENCIA", "Ponto de Referência"] },
-            distancia: { possible: ["Dist. (m)", "DIST. (M)", "Distância (m)"] }
+    <div id="uploadArea" class="upload-area">
+        <label style="cursor:pointer; font-weight:500;">📂 Carregar planilha (Excel/CSV)
+            <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv, .ods" style="display:block; margin:12px auto 0; width:auto;" />
+        </label>
+        <small style="color:#5f7c74;">Arraste ou clique — suporta múltiplas abas (unidades)</small>
+        <div id="uploadStatus" style="margin-top:8px; font-size:0.9rem;"></div>
+    </div>
+
+    <div id="logoUploadArea" class="logo-upload-area">
+        <label>🖼️ Personalizar logo (PNG, JPG, GIF)
+            <input type="file" id="logoUpload" accept="image/*" />
+        </label>
+        <button id="btnResetLogo" style="background:#6c757d; margin-top:10px; padding:6px 16px; border:none; border-radius:44px; color:#fff; cursor:pointer;">Restaurar Logo Padrão</button>
+    </div>
+
+    <div id="fileInfo" class="file-info"></div>
+    <div id="colunasInfo" class="colunas-info"></div>
+
+    <div class="input-group">
+        <div style="flex:2; display:flex; gap:12px; flex-wrap:wrap;">
+            <select id="unidadeSelect" style="display:none;"></select>
+            <input type="text" id="unidadeInput" placeholder="Digite o nome da unidade (aba)" autocomplete="off" style="flex:1;" />
+        </div>
+        <button id="btnConsultar">🔍 Selecionar Unidade</button>
+    </div>
+
+    <div id="filtroArea" class="filtro-area">
+        <input type="text" id="filtroInput" placeholder="🔎 Digite o NOME DO PASSAGEIRO (ex: GUTEMBERG, MARIA)..." />
+        <span class="badge-busca">✔ Busca na coluna "Nome Passageiro"</span>
+        <button class="btn-limpar" id="btnLimparFiltro">✕ Limpar</button>
+        <span id="contadorResultados" style="margin-left:auto; font-size:0.9rem; color:#1e7e6e;"></span>
+    </div>
+
+    <div id="resultado"></div>
+
+    <div class="master-btn">
+        <button class="btn-master" id="btnMaster">🔐 Acesso Master</button>
+        <button class="btn-logo" id="btnAbrirLogo" style="display:none;">🖼️ Trocar Logo</button>
+    </div>
+
+    <div id="persistArea" style="display: none; margin-top: 24px; border-top: 1px solid #d4e2de; padding-top: 20px;">
+        <div class="acao-master-group">
+            <button id="btnExportarDados" class="btn-export">💾 Exportar Dados (Planilha + Logo)</button>
+            <button id="btnImportarDados" class="btn-export">📂 Importar Dados Backup</button>
+            <button id="btnExportarFiltrados" class="btn-export" style="background:#4a7a6b;">📤 Exportar Resultados (CSV)</button>
+            <input type="file" id="importBackupFile" accept=".json" style="display: none;" />
+        </div>
+        <p class="info" style="margin-top: 12px; font-size: 0.8rem;">✨ Use "Exportar Dados" para baixar um arquivo .json com todos os dados e logo. Em outro dispositivo, importe para restaurar.</p>
+    </div>
+</div>
+
+<script>
+    const SENHA_HASH = '8c6a2c6b7e7e4c6f8e9a7c8d9f0e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f';
+    const fieldMapping = {
+        nomePassageiro: { possible: ["Nome Passageiro", "NOME PASSAGEIRO", "nome passageiro", "Passageiro"] },
+        turno: { possible: ["Turno", "TURNO"] },
+        linha: { possible: ["Linha Vinculada", "LINHA VINCULADA", "Linha"] },
+        endereco: { possible: ["Endereço Parada", "ENDEREÇO PARADA", "Endereco Parada"] },
+        hora: { possible: ["Hora Parada", "HORA PARADA", "Hora"] },
+        referencia: { possible: ["Ponto de Referencia", "PONTO DE REFERENCIA", "Ponto de Referência"] },
+        distancia: { possible: ["Dist. (m)", "DIST. (M)", "Distância (m)"] }
+    };
+
+    let dadosPlanilha = {}, listaAbas = [], unidadeAtual = null, registrosUnidade = [], indicePorNome = {};
+    let masterAtivo = false, resultadosFiltrados = [];
+
+    const $ = id => document.getElementById(id);
+    const uploadArea = $('uploadArea'), logoUploadArea = $('logoUploadArea');
+    const fileInfo = $('fileInfo'), colunasInfo = $('colunasInfo');
+    const unidadeSelect = $('unidadeSelect'), unidadeInput = $('unidadeInput');
+    const filtroInput = $('filtroInput'), filtroArea = $('filtroArea');
+    const resultadoDiv = $('resultado'), btnConsultar = $('btnConsultar');
+    const btnLimparFiltro = $('btnLimparFiltro'), contadorResultados = $('contadorResultados');
+    const btnMaster = $('btnMaster'), btnAbrirLogo = $('btnAbrirLogo');
+    const persistArea = $('persistArea');
+    const btnExportarDados = $('btnExportarDados'), btnImportarDados = $('btnImportarDados');
+    const btnExportarFiltrados = $('btnExportarFiltrados');
+    const importBackupFile = $('importBackupFile'), fileUpload = $('fileUpload');
+    const logoUpload = $('logoUpload'), btnResetLogo = $('btnResetLogo');
+    const logoSvg = $('logoSvg'), logoImg = $('logoImg'), uploadStatus = $('uploadStatus');
+
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    function getFieldValue(row, possibleKeys) {
+        if (!row || typeof row !== 'object') return '—';
+        const rowKeys = Object.keys(row);
+        for (let candidate of possibleKeys) {
+            const found = rowKeys.find(k => k.toLowerCase() === candidate.toLowerCase());
+            if (found !== undefined) {
+                const val = row[found];
+                return (val === null || val === undefined) ? '—' : val;
+            }
+        }
+        return '—';
+    }
+    function extrairDados(row) {
+        return {
+            nome: getFieldValue(row, fieldMapping.nomePassageiro.possible),
+            turno: getFieldValue(row, fieldMapping.turno.possible),
+            linha: getFieldValue(row, fieldMapping.linha.possible),
+            enderecoRaw: getFieldValue(row, fieldMapping.endereco.possible),
+            horaRaw: getFieldValue(row, fieldMapping.hora.possible),
+            referencia: getFieldValue(row, fieldMapping.referencia.possible),
+            distancia: getFieldValue(row, fieldMapping.distancia.possible)
         };
+    }
+    function formatarHoraExcel(valor) {
+        if (typeof valor !== 'number') return valor === '—' ? '—' : String(valor);
+        const totalSegundos = Math.round(valor * 86400);
+        const horas = Math.floor(totalSegundos / 3600);
+        const minutos = Math.floor((totalSegundos % 3600) / 60);
+        const segundos = totalSegundos % 60;
+        return `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
+    }
+    function formatarHoraDisplay(valor) {
+        if (!valor || valor === '—') return '—';
+        if (typeof valor === 'number') return formatarHoraExcel(valor);
+        return String(valor);
+    }
+    function construirIndice(registros) {
+        const idx = {};
+        registros.forEach((row, i) => {
+            const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
+            if (nome && nome !== '—') {
+                const chave = String(nome).toLowerCase().trim();
+                if (!idx[chave]) idx[chave] = [];
+                idx[chave].push(i);
+            }
+        });
+        return idx;
+    }
+    function buscarPorNome(registros, termo) {
+        if (!termo.trim()) return registros;
+        const lower = termo.toLowerCase().trim();
+        if (indicePorNome[lower]) return indicePorNome[lower].map(i => registros[i]);
+        return registros.filter(row => {
+            const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
+            return nome !== '—' && String(nome).toLowerCase().includes(lower);
+        });
+    }
 
-        /* ============================================================
-               ESTADO GLOBAL
-            ============================================================ */
-        let dadosPlanilha = {};
-        let listaAbas = [];
-        let unidadeAtual = null;
-        let registrosUnidade = [];
-        let indicePorNome = {};
-        let masterAtivo = false;
-        let resultadosFiltrados = [];
-
-        /* ============================================================
-               DOM REFS
-            ============================================================ */
-        const $ = id => document.getElementById(id);
-        const uploadArea = $('uploadArea');
-        const logoUploadArea = $('logoUploadArea');
-        const fileInfo = $('fileInfo');
-        const colunasInfo = $('colunasInfo');
-        const unidadeSelect = $('unidadeSelect');
-        const unidadeInput = $('unidadeInput');
-        const filtroInput = $('filtroInput');
-        const filtroArea = $('filtroArea');
-        const resultadoDiv = $('resultado');
-        const btnConsultar = $('btnConsultar');
-        const btnLimparFiltro = $('btnLimparFiltro');
-        const contadorResultados = $('contadorResultados');
-        const btnMaster = $('btnMaster');
-        const btnAbrirLogo = $('btnAbrirLogo');
-        const persistArea = $('persistArea');
-        const btnExportarDados = $('btnExportarDados');
-        const btnImportarDados = $('btnImportarDados');
-        const btnExportarFiltrados = $('btnExportarFiltrados');
-        const importBackupFile = $('importBackupFile');
-        const fileUpload = $('fileUpload');
-        const logoUpload = $('logoUpload');
-        const btnResetLogo = $('btnResetLogo');
-        const logoSvg = $('logoSvg');
-        const logoImg = $('logoImg');
-        const uploadStatus = $('uploadStatus');
-
-        /* ============================================================
-               FUNÇÕES AUXILIARES
-            ============================================================ */
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+    function exibirResultados(registros, unidade, termo) {
+        if (!registros || registros.length === 0) {
+            resultadoDiv.innerHTML = `<div class="erro">📭 Nenhum passageiro encontrado com "${escapeHtml(termo)}" na unidade "${escapeHtml(unidade)}".<br><br>🔍 <strong>Dica:</strong> Verifique se a coluna se chama <strong>"Nome Passageiro"</strong>. Veja as colunas disponíveis no aviso abaixo.</div>`;
+            contadorResultados.textContent = '0 resultados';
+            return;
         }
+        let html = `<div class="sucesso">✅ ${registros.length} passageiro(s) encontrado(s) para "${escapeHtml(termo)}" em <strong>${escapeHtml(unidade)}</strong></div>`;
+        for (let item of registros) {
+            const dados = extrairDados(item);
+            const nomePassageiro = dados.nome !== '—' ? dados.nome : 'Sem nome';
+            const enderecoOriginal = dados.enderecoRaw;
+            const enderecoExibicao = (enderecoOriginal && enderecoOriginal !== '—') ? enderecoOriginal : '—';
+            const mapsUrl = (enderecoOriginal && enderecoOriginal !== '—') ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoOriginal)}` : '#';
+            const enderecoLink = (enderecoOriginal && enderecoOriginal !== '—') ? `<a href="${mapsUrl}" target="_blank" class="endereco-link">${escapeHtml(enderecoExibicao)} ↗</a>` : escapeHtml(enderecoExibicao);
+            html += `<div class="card">
+                <p><strong>👤 Nome Passageiro:</strong> ${escapeHtml(nomePassageiro)}</p>
+                <p><strong>🕒 Turno:</strong> ${escapeHtml(dados.turno)}</p>
+                <p><strong>🚍 Linha Vinculada:</strong> ${escapeHtml(dados.linha)}</p>
+                <p><strong>📍 Endereço Parada:</strong> ${enderecoLink}</p>
+                <p><strong>⏱️ Hora Parada:</strong> ${escapeHtml(formatarHoraDisplay(dados.horaRaw))}</p>
+                <p><strong>🏁 Ponto de Referência:</strong> ${escapeHtml(dados.referencia)}</p>
+                <p><strong>📏 Distância:</strong> ${dados.distancia !== '—' ? escapeHtml(dados.distancia) + ' m' : '—'}</p>
+            </div>`;
+        }
+        resultadoDiv.innerHTML = html;
+        contadorResultados.textContent = `${registros.length} resultado${registros.length > 1 ? 's' : ''}`;
+        resultadosFiltrados = registros;
+    }
 
-        function getFieldValue(row, possibleKeys) {
-            if (!row || typeof row !== 'object') return '—';
-            const rowKeys = Object.keys(row);
-            for (let candidate of possibleKeys) {
-                const found = rowKeys.find(k => k.toLowerCase() === candidate.toLowerCase());
-                if (found !== undefined) {
-                    const val = row[found];
-                    return (val === null || val === undefined) ? '—' : val;
+    function mostrarMensagemErro(msg) { resultadoDiv.innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`; contadorResultados.textContent = ''; }
+    function mostrarMensagemInfo(msg) { resultadoDiv.innerHTML = `<div class="info">${escapeHtml(msg)}</div>`; contadorResultados.textContent = ''; }
+    function mostrarColunas(primeiraLinha, nomeAba) {
+        if (!primeiraLinha) return;
+        const colunas = Object.keys(primeiraLinha);
+        const temNome = colunas.some(c => c.toLowerCase().includes('nome') && c.toLowerCase().includes('passageiro'));
+        colunasInfo.innerHTML = `<strong>📋 Colunas encontradas na aba "${escapeHtml(nomeAba)}":</strong> ${colunas.join(', ')}<br>🔎 <strong>Buscando por:</strong> "Nome Passageiro". ${temNome ? '✅ Coluna "Nome Passageiro" detectada!' : '⚠️ Nenhuma coluna com "Nome Passageiro" foi encontrada. Verifique o cabeçalho da planilha.'}`;
+        colunasInfo.style.display = 'block';
+    }
+
+    function popularSelectUnidades() {
+        unidadeSelect.innerHTML = '';
+        if (listaAbas.length === 0) { unidadeSelect.style.display = 'none'; return; }
+        listaAbas.forEach(aba => {
+            const opt = document.createElement('option');
+            opt.value = aba;
+            opt.textContent = aba;
+            unidadeSelect.appendChild(opt);
+        });
+        unidadeSelect.style.display = 'block';
+        if (unidadeAtual && listaAbas.includes(unidadeAtual)) {
+            unidadeSelect.value = unidadeAtual;
+            unidadeInput.value = unidadeAtual;
+        } else {
+            unidadeSelect.value = listaAbas[0];
+            unidadeInput.value = listaAbas[0];
+        }
+    }
+
+    function carregarUnidade() {
+        let nome = unidadeInput.value.trim();
+        if (unidadeSelect.style.display !== 'none' && unidadeSelect.value) nome = unidadeSelect.value;
+        if (!nome) { mostrarMensagemErro('Digite ou selecione o nome da unidade.'); return; }
+        if (Object.keys(dadosPlanilha).length === 0) { mostrarMensagemErro('Nenhuma planilha carregada. Ative o Acesso Master e carregue um arquivo.'); return; }
+        const normalizado = nome.trim().toLowerCase();
+        const abaEncontrada = listaAbas.find(aba => aba.trim().toLowerCase() === normalizado);
+        if (!abaEncontrada) {
+            mostrarMensagemErro(`Unidade "${nome}" não encontrada. Abas disponíveis: ${listaAbas.join(', ')}.`);
+            filtroArea.classList.remove('visivel');
+            unidadeAtual = null;
+            return;
+        }
+        unidadeAtual = abaEncontrada;
+        registrosUnidade = dadosPlanilha[abaEncontrada];
+        indicePorNome = construirIndice(registrosUnidade);
+        filtroArea.classList.add('visivel');
+        filtroInput.value = '';
+        contadorResultados.textContent = `${registrosUnidade.length} registros`;
+        mostrarMensagemInfo(`✅ Unidade "${abaEncontrada}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.`);
+        unidadeInput.value = abaEncontrada;
+        if (unidadeSelect.style.display !== 'none') unidadeSelect.value = abaEncontrada;
+        if (registrosUnidade.length) mostrarColunas(registrosUnidade[0], abaEncontrada);
+    }
+
+    function aplicarFiltro() {
+        const termo = filtroInput.value.trim();
+        if (!unidadeAtual) { mostrarMensagemInfo('Selecione uma unidade primeiro.'); return; }
+        if (!termo) { exibirResultados(registrosUnidade, unidadeAtual, ''); contadorResultados.textContent = `${registrosUnidade.length} registros`; return; }
+        const filtrados = buscarPorNome(registrosUnidade, termo);
+        exibirResultados(filtrados, unidadeAtual, termo);
+    }
+    function limparFiltro() { filtroInput.value = ''; aplicarFiltro(); }
+
+    function processarArquivo(arquivo) {
+        uploadStatus.textContent = '⏳ Processando...';
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const novoDados = {}, abas = [];
+                for (let sheet of workbook.SheetNames) {
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheet]);
+                    if (json && json.length) { novoDados[sheet] = json; abas.push(sheet); }
                 }
-            }
-            return '—';
-        }
-
-        function extrairDados(row) {
-            return {
-                nome: getFieldValue(row, fieldMapping.nomePassageiro.possible),
-                turno: getFieldValue(row, fieldMapping.turno.possible),
-                linha: getFieldValue(row, fieldMapping.linha.possible),
-                enderecoRaw: getFieldValue(row, fieldMapping.endereco.possible),
-                horaRaw: getFieldValue(row, fieldMapping.hora.possible),
-                referencia: getFieldValue(row, fieldMapping.referencia.possible),
-                distancia: getFieldValue(row, fieldMapping.distancia.possible)
-            };
-        }
-
-        function formatarHoraExcel(valor) {
-            if (typeof valor !== 'number') return valor === '—' ? '—' : String(valor);
-            const totalSegundos = Math.round(valor * 86400);
-            const horas = Math.floor(totalSegundos / 3600);
-            const minutos = Math.floor((totalSegundos % 3600) / 60);
-            const segundos = totalSegundos % 60;
-            return `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
-        }
-
-        function formatarHoraDisplay(valor) {
-            if (!valor || valor === '—') return '—';
-            if (typeof valor === 'number') return formatarHoraExcel(valor);
-            return String(valor);
-        }
-
-        function construirIndice(registros) {
-            const idx = {};
-            registros.forEach((row, i) => {
-                const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
-                if (nome && nome !== '—') {
-                    const chave = String(nome).toLowerCase().trim();
-                    if (!idx[chave]) idx[chave] = [];
-                    idx[chave].push(i);
-                }
-            });
-            return idx;
-        }
-
-        function buscarPorNome(registros, termo) {
-            if (!termo.trim()) return registros;
-            const lower = termo.toLowerCase().trim();
-            if (indicePorNome[lower]) {
-                return indicePorNome[lower].map(i => registros[i]);
-            }
-            return registros.filter(row => {
-                const nome = getFieldValue(row, fieldMapping.nomePassageiro.possible);
-                return nome !== '—' && String(nome).toLowerCase().includes(lower);
-            });
-        }
-
-        /* ============================================================
-               FUNÇÕES DE EXIBIÇÃO
-            ============================================================ */
-        function exibirResultados(registros, unidade, termo) {
-            if (!registros || registros.length === 0) {
-                resultadoDiv.innerHTML = `
-                        <div class="erro">
-                            📭 Nenhum passageiro encontrado com "${escapeHtml(termo)}" na unidade "${escapeHtml(unidade)}".<br><br>
-                            🔍 <strong>Dica:</strong> Verifique se a coluna se chama <strong>"Nome Passageiro"</strong>. Veja as colunas disponíveis no aviso abaixo.
-                        </div>`;
-                contadorResultados.textContent = '0 resultados';
-                return;
-            }
-
-            let html = `<div class="sucesso">✅ ${registros.length} passageiro(s) encontrado(s) para "${escapeHtml(termo)}" em <strong>${escapeHtml(unidade)}</strong></div>`;
-            for (let item of registros) {
-                const dados = extrairDados(item);
-                const nomePassageiro = dados.nome !== '—' ? dados.nome : 'Sem nome';
-                const enderecoOriginal = dados.enderecoRaw;
-                const enderecoExibicao = (enderecoOriginal && enderecoOriginal !== '—') ? enderecoOriginal : '—';
-                const mapsUrl = (enderecoOriginal && enderecoOriginal !== '—') ?
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoOriginal)}` :
-                    '#';
-                const enderecoLink = (enderecoOriginal && enderecoOriginal !== '—') ?
-                    `<a href="${mapsUrl}" target="_blank" class="endereco-link">${escapeHtml(enderecoExibicao)} ↗</a>` :
-                    escapeHtml(enderecoExibicao);
-
-                html += `<div class="card">
-                        <p><strong>👤 Nome Passageiro:</strong> ${escapeHtml(nomePassageiro)}</p>
-                        <p><strong>🕒 Turno:</strong> ${escapeHtml(dados.turno)}</p>
-                        <p><strong>🚍 Linha Vinculada:</strong> ${escapeHtml(dados.linha)}</p>
-                        <p><strong>📍 Endereço Parada:</strong> ${enderecoLink}</p>
-                        <p><strong>⏱️ Hora Parada:</strong> ${escapeHtml(formatarHoraDisplay(dados.horaRaw))}</p>
-                        <p><strong>🏁 Ponto de Referência:</strong> ${escapeHtml(dados.referencia)}</p>
-                        <p><strong>📏 Distância:</strong> ${dados.distancia !== '—' ? escapeHtml(dados.distancia) + ' m' : '—'}</p>
-                    </div>`;
-            }
-            resultadoDiv.innerHTML = html;
-            contadorResultados.textContent = `${registros.length} resultado${registros.length > 1 ? 's' : ''}`;
-            resultadosFiltrados = registros;
-        }
-
-        function mostrarMensagemErro(msg) {
-            resultadoDiv.innerHTML = `<div class="erro">${escapeHtml(msg)}</div>`;
-            contadorResultados.textContent = '';
-        }
-
-        function mostrarMensagemInfo(msg) {
-            resultadoDiv.innerHTML = `<div class="info">${escapeHtml(msg)}</div>`;
-            contadorResultados.textContent = '';
-        }
-
-        function mostrarColunas(primeiraLinha, nomeAba) {
-            if (!primeiraLinha) return;
-            const colunas = Object.keys(primeiraLinha);
-            const temNome = colunas.some(c => c.toLowerCase().includes('nome') && c.toLowerCase().includes('passageiro'));
-            const html = `
-                    <strong>📋 Colunas encontradas na aba "${escapeHtml(nomeAba)}":</strong> ${colunas.join(', ')}<br>
-                    🔎 <strong>Buscando por:</strong> "Nome Passageiro". 
-                    ${temNome ? '✅ Coluna "Nome Passageiro" detectada!' : '⚠️ Nenhuma coluna com "Nome Passageiro" foi encontrada. Verifique o cabeçalho da planilha.'}
-                `;
-            colunasInfo.innerHTML = html;
-            colunasInfo.style.display = 'block';
-        }
-
-        /* ============================================================
-               FUNÇÕES DE CARREGAMENTO E FILTRO
-            ============================================================ */
-        function popularSelectUnidades() {
-            unidadeSelect.innerHTML = '';
-            if (listaAbas.length === 0) {
-                unidadeSelect.style.display = 'none';
-                return;
-            }
-            listaAbas.forEach(aba => {
-                const opt = document.createElement('option');
-                opt.value = aba;
-                opt.textContent = aba;
-                unidadeSelect.appendChild(opt);
-            });
-            unidadeSelect.style.display = 'block';
-            if (unidadeAtual && listaAbas.includes(unidadeAtual)) {
-                unidadeSelect.value = unidadeAtual;
-                unidadeInput.value = unidadeAtual;
-            } else {
-                unidadeSelect.value = listaAbas[0];
-                unidadeInput.value = listaAbas[0];
-            }
-        }
-
-        function carregarUnidade() {
-            let nome = unidadeInput.value.trim();
-            if (unidadeSelect.style.display !== 'none' && unidadeSelect.value) {
-                nome = unidadeSelect.value;
-            }
-            if (!nome) {
-                mostrarMensagemErro('Digite ou selecione o nome da unidade.');
-                return;
-            }
-            if (Object.keys(dadosPlanilha).length === 0) {
-                mostrarMensagemErro('Nenhuma planilha carregada. Ative o Acesso Master e carregue um arquivo.');
-                return;
-            }
-
-            const normalizado = nome.trim().toLowerCase();
-            const abaEncontrada = listaAbas.find(aba => aba.trim().toLowerCase() === normalizado);
-            if (!abaEncontrada) {
-                mostrarMensagemErro(`Unidade "${nome}" não encontrada. Abas disponíveis: ${listaAbas.join(', ')}.`);
+                if (abas.length === 0) { uploadStatus.textContent = '❌ A planilha está vazia.'; return; }
+                dadosPlanilha = novoDados;
+                listaAbas = abas;
+                if (abas.length && dadosPlanilha[abas[0]].length) mostrarColunas(dadosPlanilha[abas[0]][0], abas[0]);
+                fileInfo.textContent = `✅ ${arquivo.name} — Abas: ${abas.join(', ')} (${abas.length} unidade${abas.length > 1 ? 's' : ''})`;
+                uploadStatus.textContent = '✅ Planilha carregada com sucesso!';
+                sessionStorage.setItem('planilha_mimo', JSON.stringify({ dados: dadosPlanilha, abas: listaAbas }));
+                unidadeAtual = null; registrosUnidade = []; indicePorNome = {};
                 filtroArea.classList.remove('visivel');
-                unidadeAtual = null;
-                return;
-            }
-
-            unidadeAtual = abaEncontrada;
-            registrosUnidade = dadosPlanilha[abaEncontrada];
-            indicePorNome = construirIndice(registrosUnidade);
-            filtroArea.classList.add('visivel');
-            filtroInput.value = '';
-            contadorResultados.textContent = `${registrosUnidade.length} registros`;
-            mostrarMensagemInfo(`✅ Unidade "${abaEncontrada}" carregada. Total de ${registrosUnidade.length} registros. Digite o nome do passageiro para filtrar.`);
-            unidadeInput.value = abaEncontrada;
-            if (unidadeSelect.style.display !== 'none') unidadeSelect.value = abaEncontrada;
-            if (registrosUnidade.length) mostrarColunas(registrosUnidade[0], abaEncontrada);
-        }
-
-        function aplicarFiltro() {
-            const termo = filtroInput.value.trim();
-            if (!unidadeAtual) {
-                mostrarMensagemInfo('Selecione uma unidade primeiro.');
-                return;
-            }
-            if (!termo) {
-                exibirResultados(registrosUnidade, unidadeAtual, '');
-                contadorResultados.textContent = `${registrosUnidade.length} registros`;
-                return;
-            }
-            const filtrados = buscarPorNome(registrosUnidade, termo);
-            exibirResultados(filtrados, unidadeAtual, termo);
-        }
-
-        function limparFiltro() {
-            filtroInput.value = '';
-            aplicarFiltro();
-        }
-
-        /* ============================================================
-               PROCESSAMENTO DE PLANILHA
-            ============================================================ */
-        function processarArquivo(arquivo) {
-            uploadStatus.textContent = '⏳ Processando...';
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const novoDados = {};
-                    const abas = [];
-                    for (let sheet of workbook.SheetNames) {
-                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheet]);
-                        if (json && json.length) {
-                            novoDados[sheet] = json;
-                            abas.push(sheet);
-                        }
-                    }
-                    if (abas.length === 0) {
-                        uploadStatus.textContent = '❌ A planilha está vazia.';
-                        return;
-                    }
-                    dadosPlanilha = novoDados;
-                    listaAbas = abas;
-                    if (abas.length && dadosPlanilha[abas[0]].length) {
-                        mostrarColunas(dadosPlanilha[abas[0]][0], abas[0]);
-                    }
-                    fileInfo.textContent = `✅ ${arquivo.name} — Abas: ${abas.join(', ')} (${abas.length} unidade${abas.length > 1 ? 's' : ''})`;
-                    uploadStatus.textContent = '✅ Planilha carregada com sucesso!';
-                    sessionStorage.setItem('planilha_mimo', JSON.stringify({ dados: dadosPlanilha, abas: listaAbas }));
-                    unidadeAtual = null;
-                    registrosUnidade = [];
-                    indicePorNome = {};
-                    filtroArea.classList.remove('visivel');
-                    resultadoDiv.innerHTML = `<div class="sucesso">Planilha carregada! Selecione uma unidade para começar.</div>`;
-                    contadorResultados.textContent = '';
-                    popularSelectUnidades();
-                    salvarEstadoCompleto();
-                } catch (err) {
-                    uploadStatus.textContent = '❌ Erro ao ler o arquivo: ' + err.message;
-                }
-            };
-            reader.readAsArrayBuffer(arquivo);
-        }
-
-        /* ============================================================
-               PERSISTÊNCIA
-            ============================================================ */
-        function salvarEstadoCompleto() {
-            const estado = {
-                dadosPlanilha,
-                listaAbas,
-                logo: localStorage.getItem('logo_mimo'),
-                versao: '1.1'
-            };
-            localStorage.setItem('viacao_mimo_estado', JSON.stringify(estado));
-        }
-
-        function carregarEstadoSalvo() {
-            const raw = localStorage.getItem('viacao_mimo_estado');
-            if (!raw) return;
-            try {
-                const estado = JSON.parse(raw);
-                if (estado.dadosPlanilha && Object.keys(estado.dadosPlanilha).length) {
-                    dadosPlanilha = estado.dadosPlanilha;
-                    listaAbas = estado.listaAbas || Object.keys(dadosPlanilha);
-                    fileInfo.textContent = `💾 Dados restaurados (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
-                    if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
-                        mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                    }
-                    if (estado.logo) {
-                        localStorage.setItem('logo_mimo', estado.logo);
-                        carregarLogoSalva();
-                    }
-                    popularSelectUnidades();
-                }
-            } catch (e) { /* ignora */ }
-        }
-
-        function exportarBackup() {
-            if (Object.keys(dadosPlanilha).length === 0) {
-                alert('Nenhuma planilha carregada para exportar.');
-                return;
-            }
-            const backup = {
-                tipo: 'MIMO_Backup',
-                versao: '1.1',
-                dadosPlanilha,
-                listaAbas,
-                logo: localStorage.getItem('logo_mimo'),
-                timestamp: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `mimo_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-            alert('Backup exportado com sucesso!');
-        }
-
-        function importarBackup(arquivoJson) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-                    if (!backup.dadosPlanilha) throw new Error('Estrutura inválida');
-                    dadosPlanilha = backup.dadosPlanilha;
-                    listaAbas = backup.listaAbas || Object.keys(dadosPlanilha);
-                    if (backup.logo) {
-                        localStorage.setItem('logo_mimo', backup.logo);
-                        carregarLogoSalva();
-                    }
-                    salvarEstadoCompleto();
-                    fileInfo.textContent = `📥 Backup importado — ${listaAbas.length} aba(s)`;
-                    if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
-                        mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                    }
-                    resultadoDiv.innerHTML = `<div class="sucesso">Backup restaurado com sucesso!</div>`;
-                    unidadeAtual = null;
-                    registrosUnidade = [];
-                    indicePorNome = {};
-                    filtroArea.classList.remove('visivel');
-                    contadorResultados.textContent = '';
-                    popularSelectUnidades();
-                } catch (err) {
-                    alert('Arquivo inválido ou corrompido.');
-                }
-            };
-            reader.readAsText(arquivoJson);
-        }
-
-        function exportarResultadosCSV() {
-            if (!resultadosFiltrados || resultadosFiltrados.length === 0) {
-                alert('Não há resultados para exportar. Faça uma busca primeiro.');
-                return;
-            }
-            const cabecalho = ['Nome Passageiro', 'Turno', 'Linha Vinculada', 'Endereço Parada', 'Hora Parada', 'Ponto de Referência', 'Distância (m)'];
-            const linhas = resultadosFiltrados.map(row => {
-                const d = extrairDados(row);
-                return [
-                    d.nome,
-                    d.turno,
-                    d.linha,
-                    d.enderecoRaw,
-                    formatarHoraDisplay(d.horaRaw),
-                    d.referencia,
-                    d.distancia
-                ];
-            });
-            const csvContent = [cabecalho.join(','), ...linhas.map(l => l.join(','))].join('\n');
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `resultados_${unidadeAtual || 'geral'}_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-
-        /* ============================================================
-               LOGO
-            ============================================================ */
-        function carregarLogoSalva() {
-            const logo = localStorage.getItem('logo_mimo');
-            if (logo) {
-                logoImg.src = logo;
-                logoImg.style.display = 'block';
-                logoSvg.style.display = 'none';
-            } else {
-                logoImg.style.display = 'none';
-                logoSvg.style.display = 'block';
-            }
-        }
-
-        function salvarLogo(base64) {
-            localStorage.setItem('logo_mimo', base64);
-            carregarLogoSalva();
-            salvarEstadoCompleto();
-        }
-
-        function resetarLogo() {
-            localStorage.removeItem('logo_mimo');
-            carregarLogoSalva();
-            salvarEstadoCompleto();
-            alert('Logo restaurada para o padrão.');
-        }
-
-        /* ============================================================
-               CONTROLE DE ACESSO MASTER
-            ============================================================ */
-        async function hashSenha(senha) {
-            const enc = new TextEncoder();
-            const data = enc.encode(senha);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function ativarMaster() {
-            masterAtivo = true;
-            uploadArea.classList.add('visivel');
-            logoUploadArea.classList.add('visivel');
-            btnAbrirLogo.style.display = 'inline-block';
-            persistArea.style.display = 'block';
-            alert('🔓 Modo Master ativado.');
-        }
-
-        btnMaster.addEventListener('click', async () => {
-            if (masterAtivo) {
-                alert('Modo Master já está ativo.');
-                return;
-            }
-            const senha = prompt('Digite a senha Master:');
-            if (senha === null) return;
-            const hash = await hashSenha(senha);
-            if (hash === SENHA_HASH) {
-                ativarMaster();
-            } else {
-                alert('Senha incorreta!');
-            }
-        });
-
-        /* ============================================================
-               EVENT LISTENERS
-            ============================================================ */
-        fileUpload.addEventListener('change', (e) => {
-            if (!masterAtivo) { alert('Modo Master necessário.'); return; }
-            if (e.target.files.length) processarArquivo(e.target.files[0]);
-        });
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (!masterAtivo) { alert('Modo Master necessário.'); return; }
-            const files = e.dataTransfer.files;
-            if (files.length) processarArquivo(files[0]);
-        });
-
-        btnConsultar.addEventListener('click', carregarUnidade);
-        unidadeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') carregarUnidade();
-        });
-        unidadeSelect.addEventListener('change', function() {
-            if (this.value) {
-                unidadeInput.value = this.value;
-                carregarUnidade();
-            }
-        });
-
-        filtroInput.addEventListener('input', aplicarFiltro);
-        btnLimparFiltro.addEventListener('click', limparFiltro);
-
-        btnAbrirLogo.addEventListener('click', () => {
-            if (masterAtivo) logoUpload.click();
-            else alert('Acesso Master necessário.');
-        });
-        logoUpload.addEventListener('change', (e) => {
-            if (!masterAtivo) return;
-            if (e.target.files[0]) {
-                const fr = new FileReader();
-                fr.onload = (ev) => salvarLogo(ev.target.result);
-                fr.readAsDataURL(e.target.files[0]);
-            }
-        });
-        btnResetLogo.addEventListener('click', resetarLogo);
-
-        btnExportarDados.addEventListener('click', () => {
-            if (masterAtivo) exportarBackup();
-            else alert('Acesso Master necessário.');
-        });
-        btnImportarDados.addEventListener('click', () => {
-            if (masterAtivo) importBackupFile.click();
-            else alert('Acesso Master necessário.');
-        });
-        importBackupFile.addEventListener('change', (e) => {
-            if (e.target.files.length) importarBackup(e.target.files[0]);
-        });
-        btnExportarFiltrados.addEventListener('click', () => {
-            if (!masterAtivo) { alert('Acesso Master necessário.'); return; }
-            exportarResultadosCSV();
-        });
-
-        /* ============================================================
-               INICIALIZAÇÃO
-            ============================================================ */
-        const salvoSession = sessionStorage.getItem('planilha_mimo');
-        if (salvoSession) {
-            try {
-                const obj = JSON.parse(salvoSession);
-                dadosPlanilha = obj.dados;
-                listaAbas = obj.abas;
-                fileInfo.textContent = `📂 Planilha em cache (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
-                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) {
-                    mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
-                }
+                resultadoDiv.innerHTML = `<div class="sucesso">Planilha carregada! Selecione uma unidade para começar.</div>`;
+                contadorResultados.textContent = '';
                 popularSelectUnidades();
-            } catch (e) { /* ignora */ }
-        }
+                salvarEstadoCompleto();
+            } catch (err) { uploadStatus.textContent = '❌ Erro ao ler o arquivo: ' + err.message; }
+        };
+        reader.readAsArrayBuffer(arquivo);
+    }
 
-        carregarEstadoSalvo();
-        carregarLogoSalva();
-
-        if (listaAbas.length > 0 && !unidadeAtual) {
-            mostrarMensagemInfo(`📌 ${listaAbas.length} unidade(s) disponível(is). Selecione uma para consultar.`);
-            if (listaAbas.length === 1) {
-                unidadeInput.value = listaAbas[0];
-                carregarUnidade();
+    function salvarEstadoCompleto() {
+        const estado = { dadosPlanilha, listaAbas, logo: localStorage.getItem('logo_mimo'), versao: '1.1' };
+        localStorage.setItem('viacao_mimo_estado', JSON.stringify(estado));
+    }
+    function carregarEstadoSalvo() {
+        const raw = localStorage.getItem('viacao_mimo_estado');
+        if (!raw) return;
+        try {
+            const estado = JSON.parse(raw);
+            if (estado.dadosPlanilha && Object.keys(estado.dadosPlanilha).length) {
+                dadosPlanilha = estado.dadosPlanilha;
+                listaAbas = estado.listaAbas || Object.keys(dadosPlanilha);
+                fileInfo.textContent = `💾 Dados restaurados (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
+                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+                if (estado.logo) { localStorage.setItem('logo_mimo', estado.logo); carregarLogoSalva(); }
+                popularSelectUnidades();
             }
-        }
+        } catch (e) { /* ignora */ }
+    }
 
-        console.log('✅ MIMO - Sistema de Consulta de Passageiros carregado.');
-    </script>
+    function exportarBackup() {
+        if (Object.keys(dadosPlanilha).length === 0) { alert('Nenhuma planilha carregada para exportar.'); return; }
+        const backup = { tipo: 'MIMO_Backup', versao: '1.1', dadosPlanilha, listaAbas, logo: localStorage.getItem('logo_mimo'), timestamp: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `mimo_backup_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        alert('Backup exportado com sucesso!');
+    }
+    function importarBackup(arquivoJson) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backup = JSON.parse(e.target.result);
+                if (!backup.dadosPlanilha) throw new Error('Estrutura inválida');
+                dadosPlanilha = backup.dadosPlanilha;
+                listaAbas = backup.listaAbas || Object.keys(dadosPlanilha);
+                if (backup.logo) { localStorage.setItem('logo_mimo', backup.logo); carregarLogoSalva(); }
+                salvarEstadoCompleto();
+                fileInfo.textContent = `📥 Backup importado — ${listaAbas.length} aba(s)`;
+                if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+                resultadoDiv.innerHTML = `<div class="sucesso">Backup restaurado com sucesso!</div>`;
+                unidadeAtual = null; registrosUnidade = []; indicePorNome = {};
+                filtroArea.classList.remove('visivel');
+                contadorResultados.textContent = '';
+                popularSelectUnidades();
+            } catch (err) { alert('Arquivo inválido ou corrompido.'); }
+        };
+        reader.readAsText(arquivoJson);
+    }
+
+    function exportarResultadosCSV() {
+        if (!resultadosFiltrados || resultadosFiltrados.length === 0) { alert('Não há resultados para exportar. Faça uma busca primeiro.'); return; }
+        const cabecalho = ['Nome Passageiro', 'Turno', 'Linha Vinculada', 'Endereço Parada', 'Hora Parada', 'Ponto de Referência', 'Distância (m)'];
+        const linhas = resultadosFiltrados.map(row => {
+            const d = extrairDados(row);
+            return [d.nome, d.turno, d.linha, d.enderecoRaw, formatarHoraDisplay(d.horaRaw), d.referencia, d.distancia];
+        });
+        const csvContent = [cabecalho.join(','), ...linhas.map(l => l.join(','))].join('\n');
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `resultados_${unidadeAtual || 'geral'}_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    function carregarLogoSalva() {
+        const logo = localStorage.getItem('logo_mimo');
+        if (logo) { logoImg.src = logo; logoImg.style.display = 'block'; logoSvg.style.display = 'none'; }
+        else { logoImg.style.display = 'none'; logoSvg.style.display = 'block'; }
+    }
+    function salvarLogo(base64) { localStorage.setItem('logo_mimo', base64); carregarLogoSalva(); salvarEstadoCompleto(); }
+    function resetarLogo() { localStorage.removeItem('logo_mimo'); carregarLogoSalva(); salvarEstadoCompleto(); alert('Logo restaurada para o padrão.'); }
+
+    async function hashSenha(senha) {
+        const enc = new TextEncoder();
+        const data = enc.encode(senha);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    function ativarMaster() {
+        masterAtivo = true;
+        uploadArea.classList.add('visivel');
+        logoUploadArea.classList.add('visivel');
+        btnAbrirLogo.style.display = 'inline-block';
+        persistArea.style.display = 'block';
+        alert('🔓 Modo Master ativado.');
+    }
+
+    btnMaster.addEventListener('click', async () => {
+        if (masterAtivo) { alert('Modo Master já está ativo.'); return; }
+        const senha = prompt('Digite a senha Master:');
+        if (senha === null) return;
+        const hash = await hashSenha(senha);
+        if (hash === SENHA_HASH) ativarMaster();
+        else alert('Senha incorreta!');
+    });
+
+    fileUpload.addEventListener('change', (e) => {
+        if (!masterAtivo) { alert('Modo Master necessário.'); return; }
+        if (e.target.files.length) processarArquivo(e.target.files[0]);
+    });
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (!masterAtivo) { alert('Modo Master necessário.'); return; }
+        if (e.dataTransfer.files.length) processarArquivo(e.dataTransfer.files[0]);
+    });
+
+    btnConsultar.addEventListener('click', carregarUnidade);
+    unidadeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') carregarUnidade(); });
+    unidadeSelect.addEventListener('change', function() { if (this.value) { unidadeInput.value = this.value; carregarUnidade(); } });
+    filtroInput.addEventListener('input', aplicarFiltro);
+    btnLimparFiltro.addEventListener('click', limparFiltro);
+
+    btnAbrirLogo.addEventListener('click', () => { if (masterAtivo) logoUpload.click(); else alert('Acesso Master necessário.'); });
+    logoUpload.addEventListener('change', (e) => {
+        if (!masterAtivo) return;
+        if (e.target.files[0]) {
+            const fr = new FileReader();
+            fr.onload = (ev) => salvarLogo(ev.target.result);
+            fr.readAsDataURL(e.target.files[0]);
+        }
+    });
+    btnResetLogo.addEventListener('click', resetarLogo);
+
+    btnExportarDados.addEventListener('click', () => { if (masterAtivo) exportarBackup(); else alert('Acesso Master necessário.'); });
+    btnImportarDados.addEventListener('click', () => { if (masterAtivo) importBackupFile.click(); else alert('Acesso Master necessário.'); });
+    importBackupFile.addEventListener('change', (e) => { if (e.target.files.length) importarBackup(e.target.files[0]); });
+    btnExportarFiltrados.addEventListener('click', () => { if (!masterAtivo) { alert('Acesso Master necessário.'); return; } exportarResultadosCSV(); });
+
+    // Inicialização
+    const salvoSession = sessionStorage.getItem('planilha_mimo');
+    if (salvoSession) {
+        try {
+            const obj = JSON.parse(salvoSession);
+            dadosPlanilha = obj.dados;
+            listaAbas = obj.abas;
+            fileInfo.textContent = `📂 Planilha em cache (${listaAbas.length} aba${listaAbas.length > 1 ? 's' : ''})`;
+            if (listaAbas.length && dadosPlanilha[listaAbas[0]] && dadosPlanilha[listaAbas[0]].length) mostrarColunas(dadosPlanilha[listaAbas[0]][0], listaAbas[0]);
+            popularSelectUnidades();
+        } catch (e) { /* ignora */ }
+    }
+    carregarEstadoSalvo();
+    carregarLogoSalva();
+
+    if (listaAbas.length > 0 && !unidadeAtual) {
+        mostrarMensagemInfo(`📌 ${listaAbas.length} unidade(s) disponível(is). Selecione uma para consultar.`);
+        if (listaAbas.length === 1) {
+            unidadeInput.value = listaAbas[0];
+            carregarUnidade();
+        }
+    }
+    console.log('✅ MIMO - Sistema de Consulta de Passageiros carregado.');
+</script>
 </body>
 </html>
